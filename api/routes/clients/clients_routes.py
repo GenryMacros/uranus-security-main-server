@@ -38,6 +38,7 @@ def refresh_client_jwt():
 @logging_blueprint.route('/users/location', methods=['GET'])
 def get_client_location():
     authorization = request.headers.get("Authorization")
+    client_id = request.args.get("client_id", 0)
     client_location = client_service.get_location_data(authorization, client_id)
     header = {'Content-Type': 'application/json'}
     return ClientLocationSchema.Schema().dump(client_location), 200, header
@@ -46,6 +47,7 @@ def get_client_location():
 @logging_blueprint.route('/users/data', methods=['GET'])
 def get_client_personal_data():
     authorization = request.headers.get("Authorization")
+    client_id = request.args.get("client_id", 0)
     client_data = client_service.get_personal_data(authorization, client_id)
     header = {'Content-Type': 'application/json'}
     return ClientPersonalDataSchema.Schema().dump(client_data), 200, header
@@ -54,6 +56,7 @@ def get_client_personal_data():
 @logging_blueprint.route('/users/contact', methods=['GET'])
 def get_client_contact():
     authorization = request.headers.get("Authorization")
+    client_id = request.args.get("client_id", 0)
     client_contact = client_service.get_contact(authorization, client_id)
     header = {'Content-Type': 'application/json'}
     return ClientContactSchema.Schema().dump(client_contact), 200, header
