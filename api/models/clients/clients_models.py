@@ -36,7 +36,7 @@ class ClientPersonalData(AppDBConf.BASE):
 class ClientLocation(AppDBConf.BASE):
     __tablename__ = "ClientLocation"
     id = Column(Integer, Identity(start=1, cycle=True), primary_key=True)
-    client_id = Column(Integer, ForeignKey("ClientPersonalData.id"))
+    client_id = Column(Integer, ForeignKey("Client.id"))
     country = Column(String)
     city = Column(String)
     addr = Column(String)
@@ -48,7 +48,7 @@ class ClientLocation(AppDBConf.BASE):
 class ClientSecret(AppDBConf.BASE):
     __tablename__ = "ClientSecret"
     id = Column(Integer, Identity(start=1, cycle=True), primary_key=True)
-    client_id = Column(Integer, ForeignKey("ClientPersonalData.id"))
+    client_id = Column(Integer, ForeignKey("Client.id"))
     password_hash = Column(String)
     password_salt = Column(String)
     user_private = Column(BINARY)
