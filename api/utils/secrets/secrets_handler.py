@@ -23,10 +23,7 @@ class SecretsHandler:
     def generate_new_key_pair(cls):
         random_generator = Random.new().read
         key = RSA.generate(cls.KEY_SIZE, random_generator)
-        public_key = str(key.public_key().exportKey(format='PEM'), "utf-8") \
-            .replace('-----BEGIN PUBLIC KEY-----', '') \
-            .replace('-----END PUBLIC KEY-----', '') \
-            .replace('\n', '').replace(' ', '')
+        public_key = str(key.public_key().exportKey(format='PEM'), "utf-8")
         private_key = str(key.exportKey(format='PEM'), "utf-8")
         return public_key, private_key
 
@@ -43,12 +40,12 @@ class SecretsHandler:
             return False
 
     @classmethod
-    def sign_message(cls, message: bytes, private_key: str) -> str:
+    def sign_message(cls, message: bytes, private_key: str) -> bytes:
         msg_hash = SHA256.new(message)
         rsa_private_key = RSA.importKey(private_key)
         signer = PKCS1_v1_5.new(rsa_private_key)
         sig = signer.sign(msg_hash)
-        return base64.b64encode(sig).decode('utf-8')
+        return base64.b64encode(sig)
 
     @classmethod
     def cut_public_key(cls, public_key: str) -> str:
