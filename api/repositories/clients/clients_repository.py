@@ -23,16 +23,16 @@ class ClientRepositoryInterface:
     def get_client_password_data(self, client_id: int) -> ClientPasswordData:
         return None
 
-    def get_client_keys(self, client_id: int) -> Tuple[bytes, bytes]:
+    def get_client_keys(self, client_id: int) -> Tuple[str, str]:
         return None
 
-    def get_client_public_key(self, client_id: int) -> bytes:
+    def get_client_public_key(self, client_id: int) -> str:
         return None
 
     def get_location_by_id(self, client_id: int) -> ClientLocation:
         return None
 
-    def update_secret(self, client_id: int, new_public_key: bytes, new_private_key: bytes) -> None:
+    def update_secret(self, client_id: int, new_public_key: str, new_private_key: str) -> None:
         return None
 
     def add_new_client(self, username: str) -> Client:
@@ -88,13 +88,13 @@ class ClientRepository(ClientRepositoryInterface):
         return ClientPasswordData(password_hash=pass_data.password_hash,
                                   password_salt=pass_data.password_salt)
 
-    def get_client_keys(self, client_id: int) -> Tuple[bytes, bytes]:
+    def get_client_keys(self, client_id: int) -> Tuple[str, str]:
         pass_data = self.db_context.query(ClientSecret).filter(ClientSecret.client_id == client_id).first()
         if pass_data is None:
             raise ClientNotFound()
         return pass_data.user_public, pass_data.user_private
 
-    def get_client_public_key(self, client_id: int) -> bytes:
+    def get_client_public_key(self, client_id: int) -> str:
         pass_data = self.db_context.query(ClientSecret).filter(ClientSecret.client_id == client_id).first()
         if pass_data is None:
             raise ClientNotFound()

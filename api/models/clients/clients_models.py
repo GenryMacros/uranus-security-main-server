@@ -51,7 +51,7 @@ class ClientSecret(AppDBConf.BASE):
     client_id = Column(Integer, ForeignKey("Client.id"))
     password_hash = Column(String)
     password_salt = Column(String)
-    user_private = Column(BINARY)
-    user_public = Column(BINARY)
+    user_private = Column(String)
+    user_public = Column(String)
 
     secret = relationship(Client, backref=backref("secret_owner", uselist=True, cascade="delete,all"))

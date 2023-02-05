@@ -28,7 +28,7 @@ class ClientService:
                                                                 client_private=new_private_key)
         return LoginResponse(
             id=client.id,
-            public_key=new_public_key,
+            public_key=SecretsHandler.cut_public_key(new_public_key),
             auth_token=new_jwt,
             refresh_token=new_refresh,
         )

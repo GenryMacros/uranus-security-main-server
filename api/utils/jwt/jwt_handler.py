@@ -1,9 +1,6 @@
 import base64
 import time
-
-from cryptography.hazmat.primitives.serialization import load_pem_private_key
-from cryptography.hazmat.primitives.asymmetric import padding
-from cryptography.hazmat.primitives import hashes
+from typing import Tuple
 
 from api.utils.jwt.schemas.jwt_schemas import JwtHeader, JwtBody, RefreshBody
 from api.utils.secrets.secrets_handler import SecretsHandler
@@ -15,7 +12,7 @@ class JwtHandler:
 
     @classmethod
     def generate_new_jwt_pair(cls, user_id: int, client_first_name: str,
-                              client_last_name: str, client_private: bytes):
+                              client_last_name: str, client_private: str) -> Tuple[str, str]:
         new_jwt = cls.generate_jwt(user_id=user_id,
                                    client_private=client_private,
                                    client_first_name=client_first_name,
@@ -32,7 +29,7 @@ class JwtHandler:
     def generate_jwt(cls, user_id: int,
                      client_first_name: str,
                      client_last_name: str,
-                     client_private: bytes, is_refresh=False):
+                     client_private: str, is_refresh=False) -> str:
         header = JwtHeader.Schema().dumps(JwtHeader())
         if not is_refresh:
             body = JwtBody.Schema().dumps(
@@ -54,13 +51,7 @@ class JwtHandler:
         body_encode = base64.b64encode(body.encode('utf-8'))
 
         signature_hash = f"{header_encode}.{body_encode}".encode('utf-8')
-        client_private = load_pem_private_key(client_private, password=None)
-        signature = client_private.sign(
-            signature_hash,
-            padding.PSS(
-                mgf=padding.MGF1(hashes.SHA256()),
-                salt_length=padding.PSS.MAX_LENGTH),
-            hashes.SHA256())
+        signature = SecretsHandler.sign_message(signature_hash, client_private)
 
         header_encode = header_encode.decode("utf-8")
         body_encode = body_encode.decode("utf-8")
@@ -68,7 +59,7 @@ class JwtHandler:
         return f"{header_encode}.{str(body_encode)}.{str(signature)}"
 
     @classmethod
-    def is_token_valid(cls, token: str, client_public_key: bytes):
+    def is_token_valid(cls, token: str, client_public_key: str) -> bool:
         jwt_header, jwt_body, signature = token.split('.')
         pre_signed_message = f"{jwt_header.encode('utf-8')}.{jwt_body.encode('utf-8')}".encode('utf-8')
         is_signature_valid = SecretsHandler.is_signature_valid(
