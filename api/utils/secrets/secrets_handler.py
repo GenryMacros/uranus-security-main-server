@@ -28,10 +28,11 @@ class SecretsHandler:
         return public_key, private_key
 
     @classmethod
-    def is_signature_valid(cls, public_key: str, signature: bytes, message: bytes) -> bool:
+    def is_signature_valid(cls, public_key: str, signature: bytes, message: str) -> bool:
         pubkey_decoded = base64.b64decode(public_key)
         rsa_pubkey = RSA.importKey(pubkey_decoded)
         verifier = PKCS115_SigScheme(rsa_pubkey)
+        message = message.encode('utf-8')
         msg_hash = SHA256.new(message)
         try:
             verifier.verify(msg_hash, signature)
