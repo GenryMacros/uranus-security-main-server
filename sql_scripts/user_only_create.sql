@@ -9,8 +9,8 @@ CREATE TABLE ClientSecret(
 	client_id INT FOREIGN KEY REFERENCES  Client(id) ON DELETE CASCADE,
 	password_hash VARCHAR(64),
 	password_salt VARCHAR(10),
-	user_private VARBINARY(530),
-	user_public VARBINARY(130)
+	user_private VARCHAR(1680),
+	user_public VARCHAR(450)
 )
 
 CREATE TABLE ClientPersonalData(
