@@ -53,7 +53,6 @@ class ClientService:
                                                        client_secret=client_secret_schema,
                                                        password=signup_data.password)
         except Exception as e:
-            print(e)
             if new_client is not None:
                 self.user_repository.delete_client(new_client.id)
             raise SignupFailed()

@@ -22,7 +22,6 @@ def login():
 
 @logging_blueprint.route('/users/signup', methods=['POST'])
 def signup():
-    print(request.get_json())
     request_data: ClientSignup = ClientSignup.Schema().load(request.get_json())
     client_service.signup(request_data)
     return jsonify({"success": True}), 200
