@@ -50,7 +50,8 @@ class ClientService:
                 user_public=client_public
             )
             self.user_repository.add_new_client_secret(client_id=new_client.id,
-                                                       client_secret=client_secret_schema)
+                                                       client_secret=client_secret_schema,
+                                                       password=signup_data.password)
         except Exception as e:
             print(e)
             if new_client is not None:
