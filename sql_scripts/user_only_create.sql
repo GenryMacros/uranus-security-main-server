@@ -1,10 +1,11 @@
-CREATE TABLE Client(
+CREATE TABLE Clients(
 	id INT IDENTITY(1,1) PRIMARY KEY,
 	username VARCHAR(20),
+	email VARCHAR(20),
 	is_deleted BIT
 )
 
-CREATE TABLE ClientSecret(
+CREATE TABLE ClientsSecrets(
 	id INT IDENTITY(1,1) PRIMARY KEY,
 	client_id INT FOREIGN KEY REFERENCES  Client(id) ON DELETE CASCADE,
 	password_hash VARCHAR(64),
@@ -13,14 +14,8 @@ CREATE TABLE ClientSecret(
 	user_public VARCHAR(450)
 )
 
-CREATE TABLE ClientPersonalData(
-	id INT IDENTITY(1,1) PRIMARY KEY,
-	client_id INT FOREIGN KEY REFERENCES Client(id) ON DELETE CASCADE,
-	user_first_name VARCHAR(15),
-	user_last_name VARCHAR(20)
-)
 
-CREATE TABLE ClientLocation(
+CREATE TABLE ClientsLocations(
 	id INT IDENTITY(1,1) PRIMARY KEY,
 	client_id INT FOREIGN KEY REFERENCES Client(id) ON DELETE CASCADE,
 	country VARCHAR(20),
@@ -29,15 +24,21 @@ CREATE TABLE ClientLocation(
 	ind INT
 )
 
-CREATE TABLE ClientContact(
+CREATE TABLE ClientsAdditionalContacts(
 	id INT IDENTITY(1,1) PRIMARY KEY,
 	client_id INT FOREIGN KEY REFERENCES Client(id) ON DELETE CASCADE,
-	email VARCHAR(20),
 	phone VARCHAR(15),
 	telegram VARCHAR(20)
 )
 
-CREATE TABLE Camera(
+CREATE TABLE ClientsServersData(
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    client_id INT FOREIGN KEY REFERENCES Client(id) ON DELETE CASCADE,
+    ip: VARCHAR(10) DEFAULT '',
+    port: VARCHAR(5) DEFAULT ''
+)
+
+CREATE TABLE Cameras(
 	id INT IDENTITY(1,1) PRIMARY KEY,
 	client_id INT FOREIGN KEY REFERENCES Client(id) ON DELETE CASCADE,
 	device_name VARCHAR(10),
