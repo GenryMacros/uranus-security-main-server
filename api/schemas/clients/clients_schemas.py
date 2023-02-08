@@ -13,11 +13,7 @@ class LoginResponse:
 class ClientSignup:
     username: str
     password: str
-    first_name: str
-    last_name: str
     email: str
-    phone: str
-    telegram: str
 
 
 @dataclass
@@ -51,19 +47,6 @@ class ClientKeyPair:
 class ClientCredentials:
     login: str
     password: str
-
-
-@dataclass
-class ClientContactSchema:
-    email: str
-    phone: str
-    telegram: str
-
-
-@dataclass
-class ClientPersonalDataSchema:
-    user_first_name: str
-    user_last_name: str
 
 
 @dataclass

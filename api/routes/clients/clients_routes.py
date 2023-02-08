@@ -3,7 +3,7 @@ from flask import request
 
 from api.repositories.clients.clients_repository import ClientRepository
 from api.schemas.clients.clients_schemas import ClientCredentials, LoginResponse, ClientSignup, ClientTokenRefresh, \
-    ClientLocationSchema, ClientPersonalDataSchema, ClientContactSchema
+    ClientLocationSchema, ClientContactSchema
 from api.services.clients.clients_services import ClientService
 
 
@@ -42,15 +42,6 @@ def get_client_location():
     client_location = client_service.get_location_data(authorization, client_id)
     header = {'Content-Type': 'application/json'}
     return ClientLocationSchema.Schema().dump(client_location), 200, header
-
-
-@logging_blueprint.route('/users/data', methods=['GET'])
-def get_client_personal_data():
-    authorization = request.headers.get("Authorization")
-    client_id = request.args.get("client_id", 0)
-    client_data = client_service.get_personal_data(authorization, client_id)
-    header = {'Content-Type': 'application/json'}
-    return ClientPersonalDataSchema.Schema().dump(client_data), 200, header
 
 
 @logging_blueprint.route('/users/contact', methods=['GET'])

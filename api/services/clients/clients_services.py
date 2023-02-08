@@ -1,10 +1,9 @@
-import re
 import time
 
 from api.exceptions.clients.exceptions import InvalidTokens, TokenIsExpired, InvalidCredentials, SignupFailed
 from api.repositories.clients.clients_repository import ClientRepositoryInterface
 from api.schemas.clients.clients_schemas import ClientCredentials, ClientSignup, ClientContactSchema, \
-    ClientSecretSchema, ClientTokenRefresh, LoginResponse, ClientLocationSchema, ClientPersonalDataSchema
+    ClientSecretSchema, ClientTokenRefresh, LoginResponse, ClientLocationSchema
 from api.utils.jwt.jwt_handler import JwtHandler
 from api.utils.secrets.secrets_handler import SecretsHandler
 
@@ -37,15 +36,7 @@ class ClientService:
     def signup(self, signup_data: ClientSignup) -> None:
         new_client = None
         try:
-            new_client = self.user_repository.add_new_client(signup_data.username)
-            self.user_repository.add_new_client_personal_data(client_id=new_client.id,
-                                                              first_name=signup_data.first_name,
-                                                              last_name=signup_data.last_name)
-            client_contact_schema = ClientContactSchema(email=signup_data.email,
-                                                        phone=signup_data.phone,
-                                                        telegram=signup_data.telegram)
-            self.user_repository.add_new_client_contact(client_id=new_client.id,
-                                                        client_contact=client_contact_schema)
+            new_client = self.user_repository.add_new_client(signup_data.username, signup_data.email)
             password_salt = SecretsHandler.generate_salt()
             pass_hash = SecretsHandler.calculate_hash(
                 hash_data=signup_data.password,
@@ -101,15 +92,6 @@ class ClientService:
             city=client_location.city,
             addr=client_location.addr,
             ind=client_location.ind
-        )
-
-    def get_personal_data(self, auth_data: str, client_id: int) -> ClientPersonalDataSchema:
-        token = auth_data[7:]
-        self.check_token(token, client_id)
-        client_data = self.user_repository.get_personal_data_by_id(client_id)
-        return ClientPersonalDataSchema(
-            user_first_name=client_data.user_first_name,
-            user_last_name=client_data.user_last_name
         )
 
     def get_contact(self, auth_data: str, client_id: int) -> ClientContactSchema:
