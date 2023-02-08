@@ -17,6 +17,18 @@ class SignupFailed(Exception):
         super().__init__(self.message)
 
 
+class UsernameWrongFormat(Exception):
+    def __init__(self, message="Username format is invalid"):
+        self.message = message
+        super().__init__(self.message)
+
+
+class PasswordWrongFormat(Exception):
+    def __init__(self, message="Password format is invalid"):
+        self.message = message
+        super().__init__(self.message)
+
+
 class InvalidCredentials(Exception):
     def __init__(self, message="Invalid login or password provided"):
         self.message = message
