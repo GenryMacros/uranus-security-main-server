@@ -1,6 +1,7 @@
 import time
 
-from api.exceptions.clients.exceptions import InvalidTokens, TokenIsExpired, InvalidCredentials, SignupFailed
+from api.exceptions.clients.exceptions import InvalidTokens, TokenIsExpired, InvalidCredentials, SignupFailed, \
+    UsernameWrongFormat, PasswordWrongFormat
 from api.repositories.clients.clients_repository import ClientRepositoryInterface
 from api.schemas.clients.clients_schemas import ClientCredentials, ClientSignup, ClientContactSchema, \
     ClientSecretSchema, ClientTokenRefresh, LoginResponse, ClientLocationSchema, ClientPersonalDataSchema
@@ -14,6 +15,10 @@ class ClientService:
         self.user_repository = user_repository
 
     def login(self, credentials: ClientCredentials) -> LoginResponse:
+        if self.is_login_invalid(credentials.login):
+            raise UsernameWrongFormat()
+        elif self.is_password_invalid(credentials.password):
+            raise PasswordWrongFormat()
         client = self.user_repository.get_client_by_username(credentials.login)
         client_pass_data = self.user_repository.get_client_password_data(client.id)
         credentials_password_hash = SecretsHandler.calculate_hash(credentials.password, client_pass_data.password_salt)
@@ -32,6 +37,12 @@ class ClientService:
             auth_token=new_jwt,
             refresh_token=new_refresh,
         )
+
+    def is_password_invalid(self, password: str) -> bool:
+        return len(password) < 10 or len(password) > 20
+
+    def is_login_invalid(self, login: str) -> bool:
+        return len(login) < 5 or len(login) > 20
 
     def signup(self, signup_data: ClientSignup) -> None:
         new_client = None
