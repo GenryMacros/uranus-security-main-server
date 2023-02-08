@@ -3,6 +3,7 @@ from typing import Tuple
 from api.exceptions.clients.exceptions import InvalidCredentials, ClientNotFound
 
 from api.models.clients.clients_models import ClientSecret, Client, ClientPersonalData, ClientContact, ClientLocation
+from api.repositories.clients.clients_data_verifier import ClientsDataVerifier
 from api.repositories.db.mysql_db_context import AppDBConf
 from api.schemas.clients.clients_schemas import ClientPasswordData, ClientContactSchema, ClientSecretSchema
 
@@ -45,7 +46,7 @@ class ClientRepositoryInterface:
     def add_new_client_contact(self, client_id: int, client_contact: ClientContactSchema) -> ClientContact:
         return None
 
-    def add_new_client_secret(self, client_id: int, client_secret: ClientSecretSchema) -> ClientSecret:
+    def add_new_client_secret(self, client_id: int, client_secret: ClientSecretSchema, password: str) -> ClientSecret:
         return None
 
     def delete_client(self, client_id) -> None:
@@ -56,8 +57,11 @@ class ClientRepository(ClientRepositoryInterface):
 
     def __init__(self, db_context=AppDBConf.DB_SESSION):
         self.db_context = db_context
+        self.data_verifier = ClientsDataVerifier()
 
     def get_client_by_username(self, username: str) -> Client:
+        self.data_verifier.verify_login(username)
+
         client = self.db_context.query(Client).filter(Client.username == username).first()
         if client is None:
             raise InvalidCredentials()
@@ -106,7 +110,7 @@ class ClientRepository(ClientRepositoryInterface):
             raise ClientNotFound()
         return location_data
 
-    def update_secret(self, client_id: int, new_public_key: bytes, new_private_key: bytes) -> None:
+    def update_secret(self, client_id: int, new_public_key: str, new_private_key: str) -> None:
         self.db_context.query(ClientSecret).filter(ClientSecret.client_id == client_id).update(
             {
                 ClientSecret.user_private: new_private_key,
@@ -117,6 +121,8 @@ class ClientRepository(ClientRepositoryInterface):
         self.db_context.commit()
 
     def add_new_client(self, username: str) -> Client:
+        self.data_verifier.verify_login(username)
+
         new_client = Client(
             username=username,
             is_deleted=False
@@ -128,6 +134,9 @@ class ClientRepository(ClientRepositoryInterface):
 
     def add_new_client_personal_data(self, client_id: int,
                                      first_name: str, last_name: str) -> ClientPersonalData:
+        self.data_verifier.verify_first_name(first_name)
+        self.data_verifier.verify_last_name(last_name)
+
         new_client_personal = ClientPersonalData(
             client_id=client_id,
             user_first_name=first_name,
@@ -138,19 +147,23 @@ class ClientRepository(ClientRepositoryInterface):
         self.db_context.refresh(new_client_personal)
         return new_client_personal
 
-    def add_new_client_contact(self, client_id: int, client_contact: ClientContactSchema) -> ClientContact:
-        new_client_contact = ClientContact(
-            client_id=client_id,
-            email=client_contact.email,
-            phone=client_contact.phone,
-            telegram=client_contact.telegram
-        )
-        self.db_context.add(new_client_contact)
-        self.db_context.commit()
-        self.db_context.refresh(new_client_contact)
-        return new_client_contact
+    def add_new_client_contact(self, client_id: int, client_contact_schema: ClientContactSchema) -> ClientContact:
+        self.data_verifier.verify_contact(client_contact_schema)
 
-    def add_new_client_secret(self, client_id: int, client_secret: ClientSecretSchema) -> ClientSecret:
+        client_contact = ClientContact(
+            client_id=client_id,
+            email=client_contact_schema.email,
+            phone=client_contact_schema.phone,
+            telegram=client_contact_schema.telegram
+        )
+        self.db_context.add(client_contact)
+        self.db_context.commit()
+        self.db_context.refresh(client_contact)
+        return client_contact
+
+    def add_new_client_secret(self, client_id: int, client_secret: ClientSecretSchema, password: str) -> ClientSecret:
+        self.data_verifier.verify_password(password)
+
         new_client_secret = ClientSecret(
             client_id=client_id,
             password_hash=client_secret.password_hash,

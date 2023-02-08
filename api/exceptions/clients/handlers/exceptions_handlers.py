@@ -1,6 +1,7 @@
 
 from api.exceptions.clients.exceptions import TokenIsExpired, ClientExists, ClientNotFound, SignupFailed, \
-    InvalidCredentials, InvalidTokens, UsernameWrongFormat, PasswordWrongFormat
+    InvalidCredentials, InvalidTokens, FirstNameWrongFormat, \
+    LastNameWrongFormat, EmailWrongFormat, PhoneWrongFormat, TelegramWrongFormat
 
 
 def handle_client_exists_exception(e: ClientExists):
@@ -15,14 +16,6 @@ def handle_signup_failure_exception(e: SignupFailed):
     return {"success": False, "reason": e.message}, 400
 
 
-def handle_invalid_username_format_exception(e: UsernameWrongFormat):
-    return {"success": False, "reason": e.message}, 404
-
-
-def handle_invalid_password_format_exception(e: PasswordWrongFormat):
-    return {"success": False, "reason": e.message}, 404
-
-
 def handle_invalid_credentials_exception(e: InvalidCredentials):
     return {"success": False, "reason": e.message}, 404
 
@@ -32,4 +25,24 @@ def handle_invalid_tokens_exception(e: InvalidTokens):
 
 
 def handle_token_expired_exception(e: TokenIsExpired):
+    return {"success": False, "reason": e.message}, 400
+
+
+def handle_first_name_format_exception(e: FirstNameWrongFormat):
+    return {"success": False, "reason": e.message}, 400
+
+
+def handle_last_name_format_exception(e: LastNameWrongFormat):
+    return {"success": False, "reason": e.message}, 400
+
+
+def handle_email_format_exception(e: EmailWrongFormat):
+    return {"success": False, "reason": e.message}, 400
+
+
+def handle_phone_format_exception(e: PhoneWrongFormat):
+    return {"success": False, "reason": e.message}, 400
+
+
+def handle_telegram_format_exception(e: TelegramWrongFormat):
     return {"success": False, "reason": e.message}, 400

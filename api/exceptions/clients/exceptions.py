@@ -17,14 +17,32 @@ class SignupFailed(Exception):
         super().__init__(self.message)
 
 
-class UsernameWrongFormat(Exception):
-    def __init__(self, message="Username format is invalid"):
+class FirstNameWrongFormat(Exception):
+    def __init__(self, message="First name format is invalid"):
         self.message = message
         super().__init__(self.message)
 
 
-class PasswordWrongFormat(Exception):
-    def __init__(self, message="Password format is invalid"):
+class LastNameWrongFormat(Exception):
+    def __init__(self, message="Last name format is invalid"):
+        self.message = message
+        super().__init__(self.message)
+
+
+class EmailWrongFormat(Exception):
+    def __init__(self, message="Email format is invalid"):
+        self.message = message
+        super().__init__(self.message)
+
+
+class PhoneWrongFormat(Exception):
+    def __init__(self, message="Phone format is invalid"):
+        self.message = message
+        super().__init__(self.message)
+
+
+class TelegramWrongFormat(Exception):
+    def __init__(self, message="Telegram format is invalid"):
         self.message = message
         super().__init__(self.message)
 
