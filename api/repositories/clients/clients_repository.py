@@ -4,53 +4,9 @@ from api.exceptions.clients.exceptions import InvalidCredentials, ClientNotFound
 
 from api.models.clients.clients_models import ClientSecret, Client, ClientPersonalData, ClientContact, ClientLocation
 from api.repositories.clients.clients_data_verifier import ClientsDataVerifier
+from api.repositories.clients.interfaces.client_repository import ClientRepositoryInterface
 from api.repositories.db.mysql_db_context import AppDBConf
 from api.schemas.clients.clients_schemas import ClientPasswordData, ClientContactSchema, ClientSecretSchema
-
-
-class ClientRepositoryInterface:
-    def get_client_by_username(self, username: str) -> Client:
-        return None
-
-    def get_client_by_id(self, client_id: int) -> Client:
-        return None
-
-    def get_personal_data_by_id(self, client_id: int) -> ClientPersonalData:
-        return None
-
-    def get_contact_by_id(self, client_id: int) -> ClientContact:
-        return None
-
-    def get_client_password_data(self, client_id: int) -> ClientPasswordData:
-        return None
-
-    def get_client_keys(self, client_id: int) -> Tuple[str, str]:
-        return None
-
-    def get_client_public_key(self, client_id: int) -> str:
-        return None
-
-    def get_location_by_id(self, client_id: int) -> ClientLocation:
-        return None
-
-    def update_secret(self, client_id: int, new_public_key: str, new_private_key: str) -> None:
-        return None
-
-    def add_new_client(self, username: str) -> Client:
-        return None
-
-    def add_new_client_personal_data(self, client_id: int,
-                                     first_name: str, last_name: str) -> ClientPersonalData:
-        return None
-
-    def add_new_client_contact(self, client_id: int, client_contact: ClientContactSchema) -> ClientContact:
-        return None
-
-    def add_new_client_secret(self, client_id: int, client_secret: ClientSecretSchema, password: str) -> ClientSecret:
-        return None
-
-    def delete_client(self, client_id) -> None:
-        return
 
 
 class ClientRepository(ClientRepositoryInterface):
