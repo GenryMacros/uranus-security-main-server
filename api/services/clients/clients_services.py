@@ -1,9 +1,11 @@
 import time
 
-from api.exceptions.clients.exceptions import InvalidTokens, TokenIsExpired, InvalidCredentials, SignupFailed
+from api.exceptions.clients.exceptions import InvalidTokens, TokenIsExpired, InvalidCredentials, SignupFailed, \
+    TokenIsInvalid
 from api.repositories.clients.clients_repository import ClientRepositoryInterface
 from api.schemas.clients.clients_schemas import ClientCredentials, ClientSignup, ClientContactSchema, \
-    ClientSecretSchema, ClientTokenRefresh, LoginResponse, ClientLocationSchema
+    ClientSecretSchema, ClientTokenRefresh, LoginResponse, ClientLocationSchema, ClientConfirmation
+from api.services.clients.clients_confirmator import ClientsConfirmator
 from api.utils.jwt.jwt_handler import JwtHandler
 from api.utils.secrets.secrets_handler import SecretsHandler
 
@@ -12,6 +14,7 @@ class ClientService:
 
     def __init__(self, user_repository: ClientRepositoryInterface):
         self.user_repository = user_repository
+        self.confirmator = ClientsConfirmator()
 
     def login(self, credentials: ClientCredentials) -> LoginResponse:
         client = self.user_repository.get_client_by_username(credentials.login)
@@ -52,7 +55,10 @@ class ClientService:
             self.user_repository.add_new_client_secret(client_id=new_client.id,
                                                        client_secret=client_secret_schema,
                                                        password=signup_data.password)
+            confirmation_token = SecretsHandler.generate_temp_auth_token(signup_data.email, client_public)
+            self.confirmator.send_email_confirmation(confirmation_token, signup_data.email)
         except Exception as e:
+            print(e)
             if new_client is not None:
                 self.user_repository.delete_client(new_client.id)
             raise SignupFailed()
@@ -96,7 +102,7 @@ class ClientService:
 
     def get_contact(self, auth_data: str, client_id: int) -> ClientContactSchema:
         token = auth_data[7:]
-        self.check_token(token, client_id)
+        self.check_jwt_token(token, client_id)
         client_contact = self.user_repository.get_contact_by_id(client_id)
         return ClientContactSchema(
             email=client_contact.email,
@@ -104,7 +110,7 @@ class ClientService:
             telegram=client_contact.telegram
         )
 
-    def check_token(self, token: str, client_id: int):
+    def check_jwt_token(self, token: str, client_id: int) -> None:
         public = self.user_repository.get_client_public_key(client_id)
         is_token_signature_valid = JwtHandler.is_token_valid(token, public)
         if not is_token_signature_valid:
@@ -112,3 +118,12 @@ class ClientService:
         token_body_info = JwtHandler.retrieve_body_info_from_token_jwt(token)
         if token_body_info.expiration_date <= time.time():
             raise TokenIsExpired()
+
+    def confirm_signup(self, confirmation_data: ClientConfirmation) -> LoginResponse:
+        user_public_key = self.user_repository.get_client_public_key(1)
+        encoded_email = SecretsHandler.deserialize_token(confirmation_data.token, user_public_key)
+        client = self.user_repository.get_client_by_email(encoded_email)
+        if client is None:
+            raise TokenIsInvalid()
+        self.user_repository.set_as_confirmed_by_id(client.id)
+        return client

@@ -55,6 +55,19 @@ class ClientRepository(ClientRepositoryInterface):
             raise ClientNotFound()
         return pass_data.user_public
 
+    def get_client_by_email(self, email: str) -> Clients:
+        client = self.db_context.query(Clients).filter(Clients.email == email).first()
+        if client is None:
+            raise ClientNotFound()
+        return client
+
+    def set_as_confirmed_by_id(self, client_id: int) -> None:
+        self.db_context.query(Clients).filter(Clients.id == client_id).update(
+            {
+                Clients.is_confirmed: True
+            }
+        )
+
     def get_client_location_data(self, client_id: int) -> ClientsLocations:
         location_data = self.db_context.query(ClientsLocations).filter(ClientsLocations.client_id == client_id).first()
         if location_data is None:
@@ -77,7 +90,8 @@ class ClientRepository(ClientRepositoryInterface):
         new_client = Clients(
             username=username,
             email=email,
-            is_deleted=False
+            is_deleted=False,
+            is_confirmed=False
         )
         self.db_context.add(new_client)
         self.db_context.commit()

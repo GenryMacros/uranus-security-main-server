@@ -3,7 +3,7 @@ from flask import request
 
 from api.repositories.clients.clients_repository import ClientRepository
 from api.schemas.clients.clients_schemas import ClientCredentials, LoginResponse, ClientSignup, ClientTokenRefresh, \
-    ClientLocationSchema, ClientContactSchema
+    ClientLocationSchema, ClientContactSchema, ClientConfirmation
 from api.services.clients.clients_services import ClientService
 
 
@@ -27,6 +27,14 @@ def signup():
     return jsonify({"success": True}), 200
 
 
+@logging_blueprint.route('/users/confirm', methods=['POST'])
+def confirm():
+    request_data: ClientSignup = ClientConfirmation.Schema().load(request.get_json())
+    response: LoginResponse = client_service.confirm_signup(request_data)
+    header = {'Content-Type': 'application/json'}
+    return LoginResponse.Schema().dump(response), 200, header
+
+
 @logging_blueprint.route('/users/refresh', methods=['POST'])
 def refresh_client_jwt():
     request_data: ClientTokenRefresh = ClientTokenRefresh.Schema().load(request.get_json())
@@ -38,8 +46,10 @@ def refresh_client_jwt():
 @logging_blueprint.route('/users/location', methods=['GET'])
 def get_client_location():
     authorization = request.headers.get("Authorization")
-    client_id = request.args.get("client_id", 0)
-    client_location = client_service.get_location_data(authorization, client_id)
+    client_id = request.args.get("client_id", None)
+    if client_id is None:
+        return "", 403, {'Content-Type': 'application/json'}
+    client_location = client_service.get_location_data(authorization, int(client_id))
     header = {'Content-Type': 'application/json'}
     return ClientLocationSchema.Schema().dump(client_location), 200, header
 
@@ -47,7 +57,9 @@ def get_client_location():
 @logging_blueprint.route('/users/contact', methods=['GET'])
 def get_client_contact():
     authorization = request.headers.get("Authorization")
-    client_id = request.args.get("client_id", 0)
-    client_contact = client_service.get_contact(authorization, client_id)
+    client_id = request.args.get("client_id", None)
+    if client_id is None:
+        return "", 403, {'Content-Type': 'application/json'}
+    client_contact = client_service.get_contact(authorization, int(client_id))
     header = {'Content-Type': 'application/json'}
     return ClientContactSchema.Schema().dump(client_contact), 200, header

@@ -17,6 +17,16 @@ class ClientSignup:
 
 
 @dataclass
+class ClientConfirmationResponse:
+    success: bool
+
+
+@dataclass
+class ClientConfirmation:
+    token: str
+
+
+@dataclass
 class ClientSecretSchema:
     password_hash: str
     password_salt: str

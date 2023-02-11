@@ -2,7 +2,8 @@ CREATE TABLE Clients(
 	id INT IDENTITY(1,1) PRIMARY KEY,
 	username VARCHAR(20),
 	email VARCHAR(20),
-	is_deleted BIT
+	is_deleted BIT,
+	is_confirmed BIT
 )
 
 CREATE TABLE ClientsSecrets(

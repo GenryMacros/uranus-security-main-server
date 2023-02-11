@@ -7,15 +7,16 @@ from api.repositories.db.mysql_db_context import AppDBConf
 
 class Clients(AppDBConf.BASE):
     __tablename__ = "Clients"
-    id = Column(Integer, Identity(start=1, cycle=True), primary_key=True)
+    id = Column(Integer, Identity(start=1, increment=1), primary_key=True)
     email = Column(String)
     username = Column(String)
     is_deleted = Column(Boolean)
+    is_confirmed = Column(Boolean)
 
 
 class ClientsAdditionalContacts(AppDBConf.BASE):
     __tablename__ = "ClientsAdditionalContacts"
-    id = Column(Integer, Identity(start=1, cycle=True), primary_key=True)
+    id = Column(Integer, Identity(start=1, increment=1), primary_key=True)
     client_id = Column(Integer, ForeignKey("Clients.id"))
     phone = Column(String)
     telegram = Column(String)
@@ -25,7 +26,7 @@ class ClientsAdditionalContacts(AppDBConf.BASE):
 
 class ClientsLocations(AppDBConf.BASE):
     __tablename__ = "ClientsLocations"
-    id = Column(Integer, Identity(start=1, cycle=True), primary_key=True)
+    id = Column(Integer, Identity(start=1, increment=1), primary_key=True)
     client_id = Column(Integer, ForeignKey("Clients.id"))
     country = Column(String)
     city = Column(String)
@@ -37,7 +38,7 @@ class ClientsLocations(AppDBConf.BASE):
 
 class ClientsSecrets(AppDBConf.BASE):
     __tablename__ = "ClientsSecrets"
-    id = Column(Integer, Identity(start=1, cycle=True), primary_key=True)
+    id = Column(Integer, Identity(start=1, increment=1), primary_key=True)
     client_id = Column(Integer, ForeignKey("Clients.id"))
     password_hash = Column(String)
     password_salt = Column(String)
@@ -49,7 +50,7 @@ class ClientsSecrets(AppDBConf.BASE):
 
 class ClientsServersData(AppDBConf.BASE):
     __tablename__ = "ClientsServersData"
-    id = Column(Integer, Identity(start=1, cycle=True), primary_key=True)
+    id = Column(Integer, Identity(start=1, increment=1), primary_key=True)
     client_id = Column(Integer, ForeignKey("Clients.id"))
     ip = Column(String)
     port = Column(String)

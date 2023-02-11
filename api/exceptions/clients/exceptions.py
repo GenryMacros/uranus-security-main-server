@@ -63,3 +63,9 @@ class TokenIsExpired(Exception):
     def __init__(self, message="Token is expired"):
         self.message = message
         super().__init__(self.message)
+
+
+class TokenIsInvalid(Exception):
+    def __init__(self, message="Token is invalid"):
+        self.message = message
+        super().__init__(self.message)

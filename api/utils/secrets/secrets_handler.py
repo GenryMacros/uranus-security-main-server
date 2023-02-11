@@ -7,10 +7,12 @@ from Crypto.PublicKey import RSA
 from Crypto import Random
 from Crypto.Signature import PKCS1_v1_5
 from Crypto.Signature.pkcs1_15 import PKCS115_SigScheme
+from itsdangerous import URLSafeTimedSerializer
 
 
 class SecretsHandler:
     KEY_SIZE = 2048
+    EMAIL_AUTH_EXPIRATION_TIME = 3600
 
     @classmethod
     def calculate_hash(cls, hash_data: str, salt: str) -> str:
@@ -63,3 +65,13 @@ class SecretsHandler:
     @classmethod
     def generate_salt(cls):
         return secrets.token_hex(5)
+
+    @classmethod
+    def generate_temp_auth_token(cls, serializable_data: str, public_key: str) -> str:
+        serializer = URLSafeTimedSerializer(public_key)
+        return serializer.dumps(serializable_data, salt=public_key)
+
+    @classmethod
+    def deserialize_token(cls, token: str, public_key: str) -> str:
+        serializer = URLSafeTimedSerializer(public_key)
+        return serializer.loads(token, salt=public_key, max_age=cls.EMAIL_AUTH_EXPIRATION_TIME)

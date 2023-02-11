@@ -24,6 +24,12 @@ class ClientRepositoryInterface:
     def get_client_public_key(self, client_id: int) -> str:
         return ""
 
+    def get_client_by_email(self, email: str) -> Clients:
+        return None
+
+    def set_as_confirmed_by_id(self, client_id: int) -> None:
+        return None
+
     def get_location_by_id(self, client_id: int) -> ClientsLocations:
         return ClientsLocations()
 
