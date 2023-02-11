@@ -11,32 +11,28 @@ class JwtHandler:
     REFRESH_EXPIRATION_TIME = 7 * 24 * 60 * 60
 
     @classmethod
-    def generate_new_jwt_pair(cls, user_id: int, client_first_name: str,
-                              client_last_name: str, client_private: str) -> Tuple[str, str]:
+    def generate_new_jwt_pair(cls, user_id: int, client_email: str, client_private: str) -> Tuple[str, str]:
         new_jwt = cls.generate_jwt(user_id=user_id,
                                    client_private=client_private,
-                                   client_first_name=client_first_name,
-                                   client_last_name=client_last_name,
+                                   client_email=client_email,
                                    is_refresh=False)
         new_refresh = cls.generate_jwt(user_id=user_id,
                                        client_private=client_private,
-                                       client_first_name=client_first_name,
-                                       client_last_name=client_last_name,
+                                       client_email=client_email,
                                        is_refresh=True)
         return new_jwt, new_refresh
 
     @classmethod
     def generate_jwt(cls, user_id: int,
-                     client_first_name: str,
-                     client_last_name: str,
-                     client_private: str, is_refresh=False) -> str:
+                     client_private: str,
+                     client_email: str,
+                     is_refresh=False) -> str:
         header = JwtHeader.Schema().dumps(JwtHeader())
         if not is_refresh:
             body = JwtBody.Schema().dumps(
                 JwtBody(
                     id=user_id,
-                    first_name=client_first_name,
-                    last_name=client_last_name,
+                    client_email=client_email,
                     expiration_date=(time.time() + cls.JWT_EXPIRATION_TIME)
                 )
             )

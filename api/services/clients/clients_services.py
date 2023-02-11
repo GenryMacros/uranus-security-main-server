@@ -24,10 +24,8 @@ class ClientService:
             raise InvalidCredentials()
         new_public_key, new_private_key = SecretsHandler.generate_new_key_pair()
         self.user_repository.update_secret(client.id, new_public_key, new_private_key)
-        client_personal_data = self.user_repository.get_personal_data_by_id(client.id)
         new_jwt, new_refresh = JwtHandler.generate_new_jwt_pair(user_id=client.id,
-                                                                client_first_name=client_personal_data.user_first_name,
-                                                                client_last_name=client_personal_data.user_last_name,
+                                                                client_email=client.email,
                                                                 client_private=new_private_key)
         return LoginResponse(
             id=client.id,
@@ -126,4 +124,13 @@ class ClientService:
         if client is None:
             raise TokenIsInvalid()
         self.user_repository.set_as_confirmed_by_id(client.id)
-        return client
+        public_key, private_key = self.user_repository.get_client_keys(client.id)
+        new_jwt, new_refresh = JwtHandler.generate_new_jwt_pair(user_id=client.id,
+                                                                client_email=client.email,
+                                                                client_private=private_key)
+        return LoginResponse(
+            id=client.id,
+            public_key=SecretsHandler.cut_public_key(public_key),
+            auth_token=new_jwt,
+            refresh_token=new_refresh
+        )
