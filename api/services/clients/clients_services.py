@@ -53,7 +53,8 @@ class ClientService:
             self.user_repository.add_new_client_secret(client_id=new_client.id,
                                                        client_secret=client_secret_schema,
                                                        password=signup_data.password)
-            confirmation_token = SecretsHandler.generate_temp_auth_token(signup_data.email, client_public)
+            confirmation_token = SecretsHandler.generate_temp_auth_token(signup_data.email,
+                                                                         self.user_repository.get_client_public_key(1))
             self.confirmator.send_email_confirmation(confirmation_token, signup_data.email)
         except Exception as e:
             print(e)

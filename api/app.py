@@ -1,5 +1,5 @@
 from flask import Flask
-from itsdangerous import SignatureExpired
+from itsdangerous import SignatureExpired, BadTimeSignature
 
 from api.exceptions.clients.exceptions import InvalidTokens, InvalidCredentials, SignupFailed, ClientExists, \
     ClientNotFound, TokenIsExpired, FirstNameWrongFormat, LastNameWrongFormat, EmailWrongFormat, PhoneWrongFormat, \
@@ -8,7 +8,7 @@ from api.exceptions.clients.handlers.exceptions_handlers import handle_invalid_t
     handle_signup_failure_exception, handle_invalid_credentials_exception, handle_client_exists_exception, \
     handle_client_not_found_exception, handle_token_expired_exception, handle_first_name_format_exception, \
     handle_last_name_format_exception, handle_email_format_exception, handle_phone_format_exception, \
-    handle_telegram_format_exception, handle_signature_expired_exception
+    handle_telegram_format_exception, handle_signature_expired_exception, handle_signature_invalid_exception
 from api.exceptions.universal.exceptions import InvalidRequest
 from api.exceptions.universal.handlers.exception_handlers import handle_invalid_request_exception
 from api.routes.clients.clients_routes import logging_blueprint
@@ -28,7 +28,7 @@ def register_error_handlers(app: Flask):
     app.register_error_handler(PhoneWrongFormat, handle_phone_format_exception)
     app.register_error_handler(TelegramWrongFormat, handle_telegram_format_exception)
     app.register_error_handler(SignatureExpired, handle_signature_expired_exception)
-
+    app.register_error_handler(BadTimeSignature, handle_signature_invalid_exception)
 
 def register_blueprints(app: Flask):
     app.register_blueprint(logging_blueprint)

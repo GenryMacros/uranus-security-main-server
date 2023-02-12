@@ -32,7 +32,7 @@ class JwtHandler:
             body = JwtBody.Schema().dumps(
                 JwtBody(
                     id=user_id,
-                    client_email=client_email,
+                    email=client_email,
                     expiration_date=(time.time() + cls.JWT_EXPIRATION_TIME)
                 )
             )

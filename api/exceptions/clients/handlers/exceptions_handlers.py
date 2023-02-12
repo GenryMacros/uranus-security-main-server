@@ -1,4 +1,4 @@
-from itsdangerous import SignatureExpired
+from itsdangerous import SignatureExpired, BadTimeSignature
 
 from api.exceptions.clients.exceptions import TokenIsExpired, ClientExists, ClientNotFound, SignupFailed, \
     InvalidCredentials, InvalidTokens, FirstNameWrongFormat, \
@@ -51,6 +51,10 @@ def handle_telegram_format_exception(e: TelegramWrongFormat):
 
 def handle_signature_expired_exception(e: SignatureExpired):
     return {"success": False, "reason": "Signup token is expired"}, 400
+
+
+def handle_signature_invalid_exception(e: BadTimeSignature):
+    return {"success": False, "reason": "Signup token is invalid"}, 400
 
 
 def handle_invalid_token_exception(e: TokenIsInvalid):

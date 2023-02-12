@@ -4,7 +4,7 @@ from marshmallow_dataclass import dataclass
 @dataclass
 class JwtBody:
     id: int
-    client_email: str
+    email: str
     expiration_date: int
 
 
