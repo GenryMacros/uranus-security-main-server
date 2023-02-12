@@ -19,11 +19,13 @@ class ClientsConfirmator:
         html = render_template('confirmation_template.html', confirm_token=token)
         message = self.gmail_form(client_email, html)
         gmail_connection.sendmail(self.google_login, client_email, message.as_string())
+        gmail_connection.quit()
 
     def gmail_form(self, to: str, html) -> MIMEMultipart:
         msg = MIMEMultipart('alternative')
         msg['Subject'] = "Link"
         msg['From'] = "Email confirmation"
         msg['To'] = to
+        msg.preamble = ""
         msg.attach(MIMEText(html, 'html'))
         return msg
