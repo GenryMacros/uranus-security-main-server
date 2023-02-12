@@ -3,21 +3,18 @@ from typing import Tuple
 from api.exceptions.clients.exceptions import InvalidCredentials, ClientNotFound
 
 from api.models.clients.clients_models import ClientsSecrets, Clients, ClientsAdditionalContacts, ClientsLocations
-from api.repositories.clients.clients_data_verifier import ClientsDataVerifier
 from api.repositories.clients.interfaces.client_repository import ClientRepositoryInterface
 from api.repositories.db.mysql_db_context import AppDBConf
-from api.schemas.clients.clients_schemas import ClientPasswordData, ClientContactSchema, ClientSecretSchema
+from api.schemas.clients.clients_output_schemas import ClientContactSchema, ClientSecretSchema
+from api.schemas.clients.clients_schemas import ClientPasswordData
 
 
 class ClientRepository(ClientRepositoryInterface):
 
     def __init__(self, db_context=AppDBConf.DB_SESSION):
         self.db_context = db_context
-        self.data_verifier = ClientsDataVerifier()
 
     def get_client_by_username(self, username: str) -> Clients:
-        self.data_verifier.verify_login(username)
-
         client = self.db_context.query(Clients).filter(Clients.username == username).first()
         if client is None:
             raise InvalidCredentials()
@@ -85,7 +82,6 @@ class ClientRepository(ClientRepositoryInterface):
         self.db_context.commit()
 
     def add_new_client(self, username: str, email: str) -> Clients:
-        self.data_verifier.verify_login(username)
 
         new_client = Clients(
             username=username,
@@ -99,7 +95,6 @@ class ClientRepository(ClientRepositoryInterface):
         return new_client
 
     def add_new_client_contact(self, client_id: int, client_contact_schema: ClientContactSchema) -> ClientsAdditionalContacts:
-        self.data_verifier.verify_contact(client_contact_schema)
 
         client_contact = ClientsAdditionalContacts(
             client_id=client_id,
@@ -112,7 +107,6 @@ class ClientRepository(ClientRepositoryInterface):
         return client_contact
 
     def add_new_client_secret(self, client_id: int, client_secret: ClientSecretSchema, password: str) -> ClientsSecrets:
-        self.data_verifier.verify_password(password)
 
         new_client_secret = ClientsSecrets(
             client_id=client_id,

@@ -1,9 +1,5 @@
 {
     "username": "human",
     "password": "imreal",
-    "first_name": "Henry",
-    "last_name": "Humanoid",
-    "email": "wearehuman@gmail.com",
-    "phone": "000000000000",
-    "telegram": "@henry_not_bot"
+    "email": "wearehuman@gmail.com"
 }

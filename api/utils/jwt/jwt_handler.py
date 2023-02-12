@@ -27,9 +27,9 @@ class JwtHandler:
                      client_private: str,
                      client_email: str,
                      is_refresh=False) -> str:
-        header = JwtHeader.Schema().dumps(JwtHeader())
+        header = JwtHeader.dump(JwtHeader())
         if not is_refresh:
-            body = JwtBody.Schema().dumps(
+            body = JwtBody.dump(
                 JwtBody(
                     id=user_id,
                     email=client_email,
@@ -37,7 +37,7 @@ class JwtHandler:
                 )
             )
         else:
-            body = RefreshBody.Schema().dumps(
+            body = RefreshBody.dump(
                 RefreshBody(
                     id=user_id,
                     expiration_date=(time.time() + cls.REFRESH_EXPIRATION_TIME)
@@ -69,10 +69,10 @@ class JwtHandler:
     def retrieve_body_info_from_token_jwt(cls, token: str) -> JwtBody:
         jwt_header, jwt_body, signature = token.split('.')
         jwt_body = base64.b64decode(jwt_body).decode('utf-8')
-        return JwtBody.Schema().loads(base64.b64decode(jwt_body).decode('utf-8'))
+        return JwtBody.load(base64.b64decode(jwt_body).decode('utf-8'))
 
     @classmethod
     def retrieve_body_info_from_token_refresh(cls, token: str) -> RefreshBody:
         jwt_header, jwt_body, signature = token.split('.')
         jwt_body = base64.b64decode(jwt_body).decode('utf-8')
-        return RefreshBody.Schema().loads(base64.b64decode(jwt_body).decode('utf-8'))
+        return RefreshBody.load(base64.b64decode(jwt_body).decode('utf-8'))

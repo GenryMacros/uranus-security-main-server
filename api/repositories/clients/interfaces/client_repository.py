@@ -2,7 +2,8 @@ from typing import Tuple
 
 
 from api.models.clients.clients_models import ClientsSecrets, Clients, ClientsAdditionalContacts, ClientsLocations
-from api.schemas.clients.clients_schemas import ClientPasswordData, ClientContactSchema, ClientSecretSchema
+from api.schemas.clients.clients_output_schemas import ClientSecretSchema, ClientContactSchema
+from api.schemas.clients.clients_schemas import ClientPasswordData
 
 
 class ClientRepositoryInterface:
