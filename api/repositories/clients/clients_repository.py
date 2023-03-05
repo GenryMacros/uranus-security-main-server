@@ -1,9 +1,10 @@
 from typing import Tuple
 
-from api.exceptions.clients.exceptions import InvalidCredentials, ClientNotFound
+from api.exceptions.clients.exceptions import InvalidCredentials, ClientNotFound, TokenIsInvalid
 
-from api.models.clients.clients_models import ClientsSecrets, Clients, ClientsAdditionalContacts, ClientsLocations
-from api.repositories.clients.interfaces.client_repository import ClientRepositoryInterface
+from api.models.clients.clients_models import ClientsSecrets, Clients, ClientsAdditionalContacts, ClientsLocations, \
+    ClientsConfirmations
+from api.repositories.clients.interfaces.iclients_repository import ClientRepositoryInterface
 from api.repositories.db.mysql_db_context import AppDBConf
 from api.schemas.clients.clients_output_schemas import ClientContactSchema, ClientSecretSchema
 from api.schemas.clients.clients_schemas import ClientPasswordData
@@ -64,6 +65,7 @@ class ClientRepository(ClientRepositoryInterface):
                 Clients.is_confirmed: True
             }
         )
+        self.db_context.commit()
 
     def get_client_location_data(self, client_id: int) -> ClientsLocations:
         location_data = self.db_context.query(ClientsLocations).filter(ClientsLocations.client_id == client_id).first()
@@ -81,13 +83,14 @@ class ClientRepository(ClientRepositoryInterface):
         )
         self.db_context.commit()
 
-    def add_new_client(self, username: str, email: str) -> Clients:
+    def add_new_client(self, username: str, email: str, signup_date: str) -> Clients:
 
         new_client = Clients(
             username=username,
             email=email,
             is_deleted=False,
-            is_confirmed=False
+            is_confirmed=False,
+            signup_date=signup_date
         )
         self.db_context.add(new_client)
         self.db_context.commit()
@@ -95,7 +98,6 @@ class ClientRepository(ClientRepositoryInterface):
         return new_client
 
     def add_new_client_contact(self, client_id: int, client_contact_schema: ClientContactSchema) -> ClientsAdditionalContacts:
-
         client_contact = ClientsAdditionalContacts(
             client_id=client_id,
             phone=client_contact_schema.phone,
@@ -119,6 +121,25 @@ class ClientRepository(ClientRepositoryInterface):
         self.db_context.commit()
         self.db_context.refresh(new_client_secret)
         return new_client_secret
+
+    def add_confirmation_data(self, client_id: int, code: str, expiration_date: str) -> None:
+        client_contact = ClientsConfirmations(
+            client_id=client_id,
+            confirmation_code=code,
+            expiration_date=expiration_date
+        )
+        self.db_context.add(client_contact)
+        self.db_context.commit()
+
+    def get_confirmation_data_by_id(self, client_id: int) -> ClientsConfirmations:
+        conf_data = self.db_context.query(ClientsConfirmations).filter(ClientsConfirmations.client_id == client_id).first()
+        if conf_data is None:
+            raise TokenIsInvalid()
+        return conf_data
+
+    def remove_confirmation_data(self, client_id: int) -> None:
+        self.db_context.query(ClientsConfirmations).filter(ClientsConfirmations.client_id == client_id).delete()
+        self.db_context.commit()
 
     def delete_client(self, client_id) -> None:
         self.db_context.query(Clients).filter(Clients.id == client_id).delete()

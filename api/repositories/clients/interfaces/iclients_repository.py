@@ -1,7 +1,8 @@
 from typing import Tuple
 
 
-from api.models.clients.clients_models import ClientsSecrets, Clients, ClientsAdditionalContacts, ClientsLocations
+from api.models.clients.clients_models import ClientsSecrets, Clients, ClientsAdditionalContacts, ClientsLocations, \
+    ClientsConfirmations
 from api.schemas.clients.clients_output_schemas import ClientSecretSchema, ClientContactSchema
 from api.schemas.clients.clients_schemas import ClientPasswordData
 
@@ -37,7 +38,7 @@ class ClientRepositoryInterface:
     def update_secret(self, client_id: int, new_public_key: str, new_private_key: str) -> None:
         return None
 
-    def add_new_client(self, username: str, email: str) -> Clients:
+    def add_new_client(self, username: str, email: str, signup_date: str) -> Clients:
         return Clients()
 
     def add_new_client_contact(self, client_id: int, client_contact: ClientContactSchema) -> ClientsAdditionalContacts:
@@ -45,6 +46,15 @@ class ClientRepositoryInterface:
 
     def add_new_client_secret(self, client_id: int, client_secret: ClientSecretSchema, password: str) -> ClientsSecrets:
         return ClientsSecrets()
+
+    def add_confirmation_data(self, client_id: int, code: str, expiration_date: str) -> None:
+        return
+
+    def get_confirmation_data_by_id(self, client_id: int) -> ClientsConfirmations:
+        return ClientsConfirmations()
+
+    def remove_confirmation_data(self, client_id: int) -> None:
+        return
 
     def delete_client(self, client_id) -> None:
         return

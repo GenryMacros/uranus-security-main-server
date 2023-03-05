@@ -1,10 +1,9 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint
 from flask import request
 
 from api.repositories.clients.clients_repository import ClientRepository
-from api.schemas.clients.clients_input_schemas import ClientCredentials, ClientSignup, ClientConfirmation, \
-    ClientTokenRefresh
-from api.schemas.clients.clients_output_schemas import LoginResponse, ClientLocationSchema, ClientContactSchema
+from api.schemas.clients.clients_input_schemas import ClientCredentials, ClientSignup, ClientTokenRefresh
+from api.schemas.clients.clients_output_schemas import LoginResponse
 from api.services.clients.clients_services import ClientService
 
 
@@ -26,18 +25,19 @@ def login():
 def signup():
     request_data: ClientSignup = ClientSignup.load(request.get_json())
 
-    client_service.signup(request_data)
+    response = client_service.signup(request_data)
 
-    return jsonify({"success": True}), 200
+    return response.dump(), 200
 
 
-@logging_blueprint.route('/users/confirm', methods=['POST'])
+@logging_blueprint.route('/users/confirm', methods=['GET'])
 def confirm():
-    request_data: ClientConfirmation = ClientConfirmation.load(request.get_json())
+    confirmation_token = request.args.get("token", None)
+    client_id = request.args.get("id", None)
 
-    response: LoginResponse = client_service.confirm_signup(request_data)
+    client_service.confirm_signup(confirmation_token, client_id)
     header = {'Content-Type': 'application/json'}
-    return LoginResponse.dump(response), 200, header
+    return {"success": True}, 200, header
 
 
 @logging_blueprint.route('/users/refresh', methods=['POST'])
@@ -47,7 +47,7 @@ def refresh_client_jwt():
     refresh_response = client_service.refresh_jwt(request_data)
 
     header = {'Content-Type': 'application/json'}
-    return ClientTokenRefresh.dump(refresh_response), 200, header
+    return refresh_response.dump(), 200, header
 
 
 @logging_blueprint.route('/users/location', methods=['GET'])
@@ -60,7 +60,7 @@ def get_client_location():
     client_location = client_service.get_location_data(authorization, int(client_id))
 
     header = {'Content-Type': 'application/json'}
-    return ClientLocationSchema.dump(client_location), 200, header
+    return client_location.dump(), 200, header
 
 
 @logging_blueprint.route('/users/contact', methods=['GET'])
@@ -73,4 +73,4 @@ def get_client_contact():
     client_contact = client_service.get_contact(authorization, int(client_id))
 
     header = {'Content-Type': 'application/json'}
-    return ClientContactSchema.dump(client_contact), 200, header
+    return client_contact.dump(), 200, header

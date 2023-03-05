@@ -1,14 +1,20 @@
+CREATE DATABASE Uranus_Security
+GO
+USE Uranus_Security;
+GO
+
 CREATE TABLE Clients(
-	id INT IDENTITY(1,1) PRIMARY KEY,
+	id INT PRIMARY KEY IDENTITY(1,1),
 	username VARCHAR(20),
 	email VARCHAR(20),
 	is_deleted BIT,
-	is_confirmed BIT
+	is_confirmed BIT,
+    signup_date VARCHAR(11)
 )
 
 CREATE TABLE ClientsSecrets(
 	id INT IDENTITY(1,1) PRIMARY KEY,
-	client_id INT FOREIGN KEY REFERENCES  Clients(id) ON DELETE CASCADE,
+	client_id INT FOREIGN KEY REFERENCES Clients(id) ON DELETE CASCADE,
 	password_hash VARCHAR(64),
 	password_salt VARCHAR(10),
 	user_private VARCHAR(1680),
@@ -44,4 +50,11 @@ CREATE TABLE Cameras(
 	client_id INT FOREIGN KEY REFERENCES Clients(id) ON DELETE CASCADE,
 	device_name VARCHAR(10),
 	is_deleted BIT
+)
+
+CREATE TABLE ClientsConfirmations(
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    client_id INT FOREIGN KEY REFERENCES Clients(id) ON DELETE CASCADE,
+    confirmation_code VARCHAR(5),
+    expiration_date VARCHAR(11)
 )

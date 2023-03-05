@@ -32,6 +32,11 @@ class JwtBody:
         schema = desert.schema(JwtBody)
         return schema.dump(data)
 
+    @classmethod
+    def dumps(cls, data):
+        schema = desert.schema(JwtBody)
+        return schema.dumps(data)
+
 
 @dataclass
 class RefreshBody:
@@ -53,6 +58,11 @@ class RefreshBody:
         schema = desert.schema(JwtBody)
         return schema.dump(data)
 
+    @classmethod
+    def dumps(cls, data):
+        schema = desert.schema(JwtBody)
+        return schema.dumps(data)
+
 
 @dataclass
 class JwtHeader:
@@ -61,5 +71,10 @@ class JwtHeader:
 
     @classmethod
     def dump(cls, data):
-        schema = desert.schema(JwtBody)
+        schema = desert.schema(JwtHeader)
         return schema.dump(data)
+
+    @classmethod
+    def dumps(cls, data):
+        schema = desert.schema(JwtHeader)
+        return schema.dumps(data)

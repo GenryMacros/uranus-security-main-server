@@ -1,5 +1,5 @@
 
-from sqlalchemy import Column, Integer, String, Boolean, Identity, ForeignKey, BINARY
+from sqlalchemy import Column, Integer, String, Boolean, Identity, ForeignKey
 from sqlalchemy.orm import backref, relationship
 
 from api.repositories.db.mysql_db_context import AppDBConf
@@ -12,6 +12,7 @@ class Clients(AppDBConf.BASE):
     username = Column(String)
     is_deleted = Column(Boolean)
     is_confirmed = Column(Boolean)
+    signup_date = Column(String)
 
 
 class ClientsAdditionalContacts(AppDBConf.BASE):
@@ -56,3 +57,14 @@ class ClientsServersData(AppDBConf.BASE):
     port = Column(String)
 
     server_data = relationship(Clients, backref=backref("server_owner", uselist=True, cascade="delete,all"))
+
+
+class ClientsConfirmations(AppDBConf.BASE):
+    __tablename__ = "ClientsConfirmations"
+    id = Column(Integer, Identity(start=1, increment=1), primary_key=True)
+    client_id = Column(Integer, ForeignKey("Clients.id"))
+    confirmation_code = Column(String)
+    expiration_date = Column(String)
+
+    confirmations_data = relationship(Clients, backref=backref("confirmation_owner",
+                                                               uselist=True, cascade="delete,all"))

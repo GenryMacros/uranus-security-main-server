@@ -1,22 +1,29 @@
+import enum
 import time
 
 from api.exceptions.clients.exceptions import InvalidTokens, TokenIsExpired, InvalidCredentials, SignupFailed, \
     TokenIsInvalid
 from api.repositories.clients.clients_repository import ClientRepositoryInterface
-from api.schemas.clients.clients_input_schemas import ClientCredentials, ClientSignup, ClientTokenRefresh, \
-    ClientConfirmation
+from api.schemas.clients.clients_input_schemas import ClientCredentials, ClientSignup, ClientTokenRefresh
 from api.schemas.clients.clients_output_schemas import LoginResponse, ClientSecretSchema, ClientLocationSchema, \
-    ClientContactSchema
+    ClientContactSchema, ClientsSignupResponse
 from api.services.clients.clients_confirmator import ClientsConfirmator
 from api.utils.jwt.jwt_handler import JwtHandler
 from api.utils.secrets.secrets_handler import SecretsHandler
 
 
+class ConfirmationMethod(enum.Enum):
+    LINK = 0,
+    SHORT_CODE = 1
+
+
 class ClientService:
+    TOKEN_EXPIRATION = 60 * 30
 
     def __init__(self, user_repository: ClientRepositoryInterface):
         self.user_repository = user_repository
         self.confirmator = ClientsConfirmator()
+        self.confirmation_method = ConfirmationMethod.SHORT_CODE
 
     def login(self, credentials: ClientCredentials) -> LoginResponse:
         client = self.user_repository.get_client_by_username(credentials.login)
@@ -36,10 +43,13 @@ class ClientService:
             refresh_token=new_refresh,
         )
 
-    def signup(self, signup_data: ClientSignup) -> None:
+    def signup(self, signup_data: ClientSignup) -> ClientsSignupResponse:
         new_client = None
         try:
-            new_client = self.user_repository.add_new_client(signup_data.username, signup_data.email)
+            current_time = str(int(time.time()))
+            new_client = self.user_repository.add_new_client(signup_data.username,
+                                                             signup_data.email,
+                                                             current_time)
             password_salt = SecretsHandler.generate_salt()
             pass_hash = SecretsHandler.calculate_hash(
                 hash_data=signup_data.password,
@@ -55,14 +65,27 @@ class ClientService:
             self.user_repository.add_new_client_secret(client_id=new_client.id,
                                                        client_secret=client_secret_schema,
                                                        password=signup_data.password)
-            confirmation_token = SecretsHandler.generate_temp_auth_token(signup_data.email,
-                                                                         self.user_repository.get_client_public_key(1))
-            self.confirmator.send_email_confirmation(confirmation_token, signup_data.email)
+            confirmation_token = self.__generate_confirmation_token(signup_data, new_client.id)
+            self.confirmator.send_email_confirmation(confirmation_token, signup_data.email,
+                                                     confirmation_method=self.confirmation_method)
+            return ClientsSignupResponse(True, new_client.id)
         except Exception as e:
             print(e)
             if new_client is not None:
                 self.user_repository.delete_client(new_client.id)
             raise SignupFailed()
+
+    def __generate_confirmation_token(self, signup_data: ClientSignup, client_id: int) -> str:
+        if self.confirmation_method == ConfirmationMethod.SHORT_CODE:
+            code = SecretsHandler.generate_salt(len_in_bytes=2)
+            expiration_date = int(time.time()) + self.TOKEN_EXPIRATION
+            self.user_repository.add_confirmation_data(client_id, code, str(expiration_date))
+            return code
+        elif self.confirmation_method == ConfirmationMethod.LINK:
+            return SecretsHandler.generate_temp_auth_token(signup_data.email,
+                                                           self.user_repository.get_client_public_key(1))
+        else:
+            raise NotImplementedError()
 
     def refresh_jwt(self, refresh_data: ClientTokenRefresh) -> ClientTokenRefresh:
         public, private = self.user_repository.get_client_keys(refresh_data.user_id)
@@ -80,8 +103,7 @@ class ClientService:
             jwt_body_info = JwtHandler.retrieve_body_info_from_token_jwt(refresh_data.jwt)
             new_jwt = JwtHandler.generate_jwt(
                 user_id=jwt_body_info.id,
-                client_first_name=jwt_body_info.last_name,
-                client_last_name=jwt_body_info.last_name,
+                client_email=jwt_body_info.email,
                 client_private=private
             )
             return ClientTokenRefresh(
@@ -120,20 +142,29 @@ class ClientService:
         if token_body_info.expiration_date <= time.time():
             raise TokenIsExpired()
 
-    def confirm_signup(self, confirmation_data: ClientConfirmation) -> LoginResponse:
+    def confirm_signup(self, confirmation_token: str, client_id: int):
+        if self.confirmation_method == ConfirmationMethod.LINK:
+            self.__confirm_signup_link(confirmation_token)
+        elif self.confirmation_method == ConfirmationMethod.SHORT_CODE:
+            self.__confirm_signup_code(confirmation_token, client_id)
+        else:
+            raise NotImplementedError()
+
+        self.user_repository.set_as_confirmed_by_id(client_id)
+
+    def __confirm_signup_link(self, token: str):
         user_public_key = self.user_repository.get_client_public_key(1)
-        encoded_email = SecretsHandler.deserialize_token(confirmation_data.token, user_public_key)
+        encoded_email = SecretsHandler.deserialize_token(token, user_public_key)
         client = self.user_repository.get_client_by_email(encoded_email)
         if client is None:
             raise TokenIsInvalid()
-        self.user_repository.set_as_confirmed_by_id(client.id)
-        public_key, private_key = self.user_repository.get_client_keys(client.id)
-        new_jwt, new_refresh = JwtHandler.generate_new_jwt_pair(user_id=client.id,
-                                                                client_email=client.email,
-                                                                client_private=private_key)
-        return LoginResponse(
-            id=client.id,
-            public_key=SecretsHandler.cut_public_key(public_key),
-            auth_token=new_jwt,
-            refresh_token=new_refresh
-        )
+
+    def __confirm_signup_code(self, token: str, client_id: int):
+        conf_data = self.user_repository.get_confirmation_data_by_id(client_id)
+        conf_data_expiration = int(conf_data.expiration_date)
+        if token != conf_data.confirmation_code:
+            raise TokenIsInvalid()
+        elif time.time() > conf_data_expiration:
+            self.user_repository.remove_confirmation_data(client_id)
+            raise TokenIsExpired()
+        self.user_repository.remove_confirmation_data(client_id)

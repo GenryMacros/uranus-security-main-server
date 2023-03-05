@@ -34,10 +34,9 @@ class LoginResponse:
         loaded_response: LoginResponse = schema.load(json_data)
         return loaded_response
 
-    @classmethod
-    def dump(cls, data):
+    def dump(self):
         schema = desert.schema(LoginResponse)
-        return schema.dump(data)
+        return schema.dump(self)
 
 
 @dataclass
@@ -47,6 +46,25 @@ class ClientConfirmationResponse:
             required=True
         )
     ))
+
+
+@dataclass
+class ClientsSignupResponse:
+    success: bool = dataclasses.field(metadata=desert.metadata(
+        fields.String(
+            required=True
+        )
+    ))
+
+    id: int = dataclasses.field(metadata=desert.metadata(
+        fields.Integer(
+            required=True
+        )
+    ))
+
+    def dump(self):
+        schema = desert.schema(ClientsSignupResponse)
+        return schema.dump(self)
 
 
 @dataclass
@@ -97,10 +115,9 @@ class ClientContactSchema:
         loaded_response: ClientContactSchema = schema.load(json_data)
         return loaded_response
 
-    @classmethod
-    def dump(cls, data):
+    def dump(self):
         schema = desert.schema(ClientContactSchema)
-        return schema.dump(data)
+        return schema.dump(self)
 
 
 @dataclass
@@ -132,7 +149,6 @@ class ClientLocationSchema:
         loaded_response: ClientLocationSchema = schema.load(json_data)
         return loaded_response
 
-    @classmethod
-    def dump(cls, data):
+    def dump(self):
         schema = desert.schema(ClientLocationSchema)
-        return schema.dump(data)
+        return schema.dump(self)

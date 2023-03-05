@@ -62,8 +62,8 @@ class SecretsHandler:
             .replace('\n', '').replace(' ', '')
 
     @classmethod
-    def generate_salt(cls):
-        return secrets.token_hex(5)
+    def generate_salt(cls, len_in_bytes=5):
+        return secrets.token_hex(len_in_bytes)
 
     @classmethod
     def generate_temp_auth_token(cls, serializable_data: str, public_key: str) -> str:

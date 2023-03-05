@@ -32,10 +32,9 @@ class ClientCredentials:
             raise ValueError("Login or password is invalid")
         return loaded_credentials
 
-    @classmethod
-    def dump(cls, data):
+    def dump(self):
         schema = desert.schema(ClientCredentials)
-        return schema.dump(data)
+        return schema.dump(self)
 
 
 @dataclass
@@ -70,30 +69,9 @@ class ClientSignup:
             raise EmailWrongFormat()
         return loaded_credentials
 
-    @classmethod
-    def dump(cls, data):
+    def dump(self):
         schema = desert.schema(ClientSignup)
-        return schema.dump(data)
-
-
-@dataclass
-class ClientConfirmation:
-    token: str = dataclasses.field(metadata=desert.metadata(
-        fields.String(
-            required=True
-        )
-    ))
-
-    @classmethod
-    def load(cls, json_data):
-        schema = desert.schema(ClientConfirmation)
-        loaded_confirmation: ClientConfirmation = schema.load(json_data)
-        return loaded_confirmation
-
-    @classmethod
-    def dump(cls, data):
-        schema = desert.schema(ClientConfirmation)
-        return schema.dump(data)
+        return schema.dump(self)
 
 
 @dataclass
@@ -120,7 +98,6 @@ class ClientTokenRefresh:
         loaded_refresh: ClientTokenRefresh = schema.load(json_data)
         return loaded_refresh
 
-    @classmethod
-    def dump(cls, data):
+    def dump(self):
         schema = desert.schema(ClientTokenRefresh)
-        return schema.dump(data)
+        return schema.dump(self)

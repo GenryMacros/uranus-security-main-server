@@ -27,9 +27,9 @@ class JwtHandler:
                      client_private: str,
                      client_email: str,
                      is_refresh=False) -> str:
-        header = JwtHeader.dump(JwtHeader())
+        header = JwtHeader.dumps(JwtHeader())
         if not is_refresh:
-            body = JwtBody.dump(
+            body = JwtBody.dumps(
                 JwtBody(
                     id=user_id,
                     email=client_email,
@@ -37,7 +37,7 @@ class JwtHandler:
                 )
             )
         else:
-            body = RefreshBody.dump(
+            body = RefreshBody.dumps(
                 RefreshBody(
                     id=user_id,
                     expiration_date=(time.time() + cls.REFRESH_EXPIRATION_TIME)
