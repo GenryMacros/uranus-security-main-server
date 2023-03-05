@@ -33,11 +33,11 @@ def signup():
 @logging_blueprint.route('/users/confirm', methods=['GET'])
 def confirm():
     confirmation_token = request.args.get("token", None)
-    client_id = request.args.get("id", None)
+    client_id = int(request.args.get("id", None))
 
-    client_service.confirm_signup(confirmation_token, client_id)
+    response = client_service.confirm_signup(confirmation_token, client_id)
     header = {'Content-Type': 'application/json'}
-    return {"success": True}, 200, header
+    return response.dump(), 200, header
 
 
 @logging_blueprint.route('/users/refresh', methods=['POST'])

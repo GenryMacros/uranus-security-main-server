@@ -12,21 +12,21 @@ class JwtHandler:
 
     @classmethod
     def generate_new_jwt_pair(cls, user_id: int, client_email: str, client_private: str) -> Tuple[str, str]:
-        new_jwt = cls.generate_jwt(user_id=user_id,
-                                   client_private=client_private,
-                                   client_email=client_email,
-                                   is_refresh=False)
-        new_refresh = cls.generate_jwt(user_id=user_id,
-                                       client_private=client_private,
-                                       client_email=client_email,
-                                       is_refresh=True)
+        new_jwt = cls.__generate_jwt(user_id=user_id,
+                                     client_private=client_private,
+                                     client_email=client_email,
+                                     is_refresh=False)
+        new_refresh = cls.__generate_jwt(user_id=user_id,
+                                         client_private=client_private,
+                                         client_email=client_email,
+                                         is_refresh=True)
         return new_jwt, new_refresh
 
     @classmethod
-    def generate_jwt(cls, user_id: int,
-                     client_private: str,
-                     client_email: str,
-                     is_refresh=False) -> str:
+    def __generate_jwt(cls, user_id: int,
+                       client_private: str,
+                       client_email: str,
+                       is_refresh=False) -> str:
         header = JwtHeader.dumps(JwtHeader())
         if not is_refresh:
             body = JwtBody.dumps(

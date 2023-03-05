@@ -142,7 +142,7 @@ class ClientService:
         if token_body_info.expiration_date <= time.time():
             raise TokenIsExpired()
 
-    def confirm_signup(self, confirmation_token: str, client_id: int):
+    def confirm_signup(self, confirmation_token: str, client_id: int) -> LoginResponse:
         if self.confirmation_method == ConfirmationMethod.LINK:
             self.__confirm_signup_link(confirmation_token)
         elif self.confirmation_method == ConfirmationMethod.SHORT_CODE:
@@ -151,6 +151,15 @@ class ClientService:
             raise NotImplementedError()
 
         self.user_repository.set_as_confirmed_by_id(client_id)
+        client_data = self.user_repository.get_client_by_id(client_id)
+        client_keys = self.user_repository.get_client_keys(client_id)
+        client_jwt, client_refresh = JwtHandler.generate_new_jwt_pair(client_id,
+                                                                      client_data.email,
+                                                                      client_keys[1])
+        return LoginResponse(id=client_id,
+                             public_key=client_keys[0],
+                             auth_token=client_jwt,
+                             refresh_token=client_refresh)
 
     def __confirm_signup_link(self, token: str):
         user_public_key = self.user_repository.get_client_public_key(1)
