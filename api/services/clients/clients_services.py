@@ -156,8 +156,8 @@ class ClientService:
         client_jwt, client_refresh = JwtHandler.generate_new_jwt_pair(client_id,
                                                                       client_data.email,
                                                                       client_keys[1])
-        return LoginResponse(id=client_id,
-                             public_key=client_keys[0],
+        return LoginResponse(id=int(client_id),
+                             public_key=SecretsHandler.cut_public_key(client_keys[0]),
                              auth_token=client_jwt,
                              refresh_token=client_refresh)
 
@@ -177,3 +177,4 @@ class ClientService:
             self.user_repository.remove_confirmation_data(client_id)
             raise TokenIsExpired()
         self.user_repository.remove_confirmation_data(client_id)
+

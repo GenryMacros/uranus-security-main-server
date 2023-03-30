@@ -7,11 +7,11 @@ from api.schemas.clients.clients_output_schemas import LoginResponse
 from api.services.clients.clients_services import ClientService
 
 
-logging_blueprint = Blueprint("logging_blueprint", __name__)
+users_blueprint = Blueprint("users_blueprint", __name__)
 client_service = ClientService(ClientRepository())
 
 
-@logging_blueprint.route('/users/login', methods=['POST'])
+@users_blueprint.route('/users/login', methods=['POST'])
 def login():
     request_data: ClientCredentials = ClientCredentials.load(request.get_json())
 
@@ -21,7 +21,7 @@ def login():
     return LoginResponse.dump(response), 200, header
 
 
-@logging_blueprint.route('/users/signup', methods=['POST'])
+@users_blueprint.route('/users/signup', methods=['POST'])
 def signup():
     request_data: ClientSignup = ClientSignup.load(request.get_json())
 
@@ -30,7 +30,7 @@ def signup():
     return response.dump(), 200
 
 
-@logging_blueprint.route('/users/confirm', methods=['GET'])
+@users_blueprint.route('/users/confirm', methods=['GET'])
 def confirm():
     confirmation_token = request.args.get("token", None)
     client_id = int(request.args.get("id", None))
@@ -40,7 +40,17 @@ def confirm():
     return response.dump(), 200, header
 
 
-@logging_blueprint.route('/users/refresh', methods=['POST'])
+@users_blueprint.route('/users/check_token', methods=['POST'])
+def check_token():
+    request_data: ClientCredentials = ClientCredentials.load(request.get_json())
+
+    response: LoginResponse = client_service.login(request_data)
+
+    header = {'Content-Type': 'application/json'}
+    return LoginResponse.dump(response), 200, header
+
+
+@users_blueprint.route('/users/refresh', methods=['POST'])
 def refresh_client_jwt():
     request_data: ClientTokenRefresh = ClientTokenRefresh.load(request.get_json())
 
@@ -50,7 +60,7 @@ def refresh_client_jwt():
     return refresh_response.dump(), 200, header
 
 
-@logging_blueprint.route('/users/location', methods=['GET'])
+@users_blueprint.route('/users/location', methods=['GET'])
 def get_client_location():
     authorization = request.headers.get("Authorization")
     client_id = request.args.get("client_id", None)
@@ -63,7 +73,7 @@ def get_client_location():
     return client_location.dump(), 200, header
 
 
-@logging_blueprint.route('/users/contact', methods=['GET'])
+@users_blueprint.route('/users/contact', methods=['GET'])
 def get_client_contact():
     authorization = request.headers.get("Authorization")
     client_id = request.args.get("client_id", None)

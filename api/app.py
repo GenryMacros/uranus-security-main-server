@@ -13,7 +13,7 @@ from api.exceptions.clients.handlers.exceptions_handlers import handle_invalid_t
 from api.exceptions.universal.exceptions import InvalidRequest
 from api.exceptions.universal.handlers.exception_handlers import handle_invalid_request_exception, \
     handle_value_exception
-from api.routes.clients.clients_routes import logging_blueprint
+from api.routes.clients.clients_routes import users_blueprint
 
 
 def register_error_handlers(app: Flask):
@@ -36,7 +36,7 @@ def register_error_handlers(app: Flask):
 
 
 def register_blueprints(app: Flask):
-    app.register_blueprint(logging_blueprint)
+    app.register_blueprint(users_blueprint)
     pass
 
 

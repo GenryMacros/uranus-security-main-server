@@ -8,7 +8,7 @@ from marshmallow_dataclass import dataclass
 @dataclass
 class LoginResponse:
     id: int = dataclasses.field(metadata=desert.metadata(
-        fields.String(
+        fields.Integer(
             required=True
         )
     ))
