@@ -1,17 +1,15 @@
 import logging
 import sys
-import time
 from threading import Thread
 from typing import Dict
 
-import marshmallow
 from aiohttp import web
 
 import socketio
 from ai.background_subtractor import BackgroundSubtractor
 from ai.streamer import RealTimeStreamer
 from recorder import Recorder
-from socket_server.utils.user_data import UserData
+from socket_server.schemas.user import UserAuthData, GetCamerasResponse, CamData, AuthenticateResponse
 
 IS_LOG = True
 logger = logging.getLogger(__name__)
@@ -33,7 +31,7 @@ app = web.Application()
 sio.attach(app)
 last_cam2frame = None
 recorder = Recorder(cameras)
-users_info_map: Dict[str, UserData] = {}
+users_info_map: Dict[str, UserAuthData] = {}
 
 
 def overseer_task():
@@ -46,7 +44,7 @@ def overseer_task():
             if subtractor.is_dramatically_changed(frame):
                 logger.info("[OVERSEER] POTENTIAL INVASION")
                 recorder.start_record(int(id))
-                sio.emit('INVASION', {'data': 'INVASION', 'cam_id': id})
+                sio.emit('INVASION', {'schemas': 'INVASION', 'cam_id': id})
             else:
                 recorder.end_record(int(id))
 
@@ -54,37 +52,40 @@ def overseer_task():
 @sio.event
 async def get_cameras(sid):
     logger.info(f"[SERVER] Client {sid} called GET_CAMERAS")
+    response: GetCamerasResponse = GetCamerasResponse([], True)
+
     if users_info_map.get(sid, None) is None or not users_info_map[sid].is_authenticated():
         logger.info(f"[SERVER] Client {sid} GET_CAMERAS rejected")
+        response.success = False
     else:
-        cameras_data = []
         for cam in cameras:
-            dict = {
-                "id": cam,
-                "is_online": True
-            }
-            cameras_data.append(dict)
+            cam_data: CamData = CamData(cam_id=cam, is_online=True)
+            response.cameras.append(cam_data)
 
-        return {"cameras": cameras_data}
+    return response.dump()
 
 
 @sio.event
 async def connect(sid, environ):
     logger.info(f"[SERVER] New client connected: {sid} ")
-    users_info_map[sid] = UserData(None, None, None, None)
-    await sio.emit('my_response', data={'data': "aaaa"}, to=sid)
+    users_info_map[sid] = UserAuthData(None, None, None, None)
+    await sio.emit('my_response', data={'schemas': "aaaa"}, to=sid)
 
 
 @sio.event
 async def authenticate(sid, data):
     logger.info(f"[SERVER] Client {sid} authentication started")
+    response: AuthenticateResponse = AuthenticateResponse(False)
+
     try:
-        user_data = UserData.load(data)
+        user_data = UserAuthData.load(data)
         users_info_map[sid] = user_data
 
+        response.success = True
         logger.info(f"[SERVER] Client {sid} authenticated successfully")
     except Exception as e:
         logger.error(f"[SERVER] Exception occurred: {e}")
+    return response.dump()
 
 
 async def read_frame(sid):
