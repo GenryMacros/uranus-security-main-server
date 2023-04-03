@@ -8,8 +8,8 @@ from utils.stream_record import StreamRecorder
 class Recorder:
     WAIT_BEFORE_RECORD_END = 2
 
-    def __init__(self, cam_ids: List[int]):
-        self.record_path = "../recorded"
+    def __init__(self, cam_ids: List[int], record_path="../recorded"):
+        self.record_path = record_path
         self.cam_ids = cam_ids
         self.is_record_started = {}
         self.records = {}

@@ -1,0 +1,5 @@
+{
+  "cam_ids": "[0]",
+  "invasion_threshold": 0.03,
+  "record_path": "../recorded"
+}

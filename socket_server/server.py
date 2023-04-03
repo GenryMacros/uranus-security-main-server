@@ -1,6 +1,5 @@
 import logging
 import sys
-from threading import Thread
 from typing import Dict
 
 from aiohttp import web
@@ -8,8 +7,9 @@ from aiohttp import web
 import socketio
 from ai.background_subtractor import BackgroundSubtractor
 from ai.streamer import RealTimeStreamer
-from recorder import Recorder
-from socket_server.schemas.user import UserAuthData, GetCamerasResponse, CamData, AuthenticateResponse
+from socket_server.utils.recorder import Recorder
+from socket_server.overseer import Overseer
+from socket_server.schemas.user import UserAuthData, GetCamerasResponse, AuthenticateResponse
 
 IS_LOG = True
 logger = logging.getLogger(__name__)
@@ -32,21 +32,6 @@ sio.attach(app)
 last_cam2frame = None
 recorder = Recorder(cameras)
 users_info_map: Dict[str, UserAuthData] = {}
-
-
-def overseer_task():
-    global last_cam2frame
-    while True:
-        cam2frame = streamer.read_frame()
-        last_cam2frame = subtractor.subtract(cam2frame)
-        recorder.record(cam2frame)
-        for id, frame in last_cam2frame.items():
-            if subtractor.is_dramatically_changed(frame):
-                logger.info("[OVERSEER] POTENTIAL INVASION")
-                recorder.start_record(int(id))
-                sio.emit('INVASION', {'schemas': 'INVASION', 'cam_id': id})
-            else:
-                recorder.end_record(int(id))
 
 
 @sio.event
@@ -107,6 +92,7 @@ def disconnect(sid):
 
 
 if __name__ == '__main__':
-    overseer_task = Thread(target=overseer_task)
-    overseer_task.start()
+    config_path = "configs/overseer_config.json"
+    overseer = Overseer(sio, config_path)
+    overseer.start_loop()
     web.run_app(app, host=HOST, port=PORT)

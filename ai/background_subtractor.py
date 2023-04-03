@@ -10,7 +10,7 @@ from ai.streamer import RealTimeStreamer
 
 class BackgroundSubtractor:
 
-    def __init__(self, dramatic_change_thresh=0.01):
+    def __init__(self, dramatic_change_thresh=0.03):
         self.background = None
         self.background_update_interval = 60 * 30
         self.fgbg = cv2.createBackgroundSubtractorMOG2()
