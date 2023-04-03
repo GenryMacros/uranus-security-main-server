@@ -48,34 +48,21 @@ class UserAuthData:
         return self.token is not None
 
 
-@dataclass
-class CamData:
-    cam_id: int = dataclasses.field(metadata=desert.metadata(
-        fields.Integer(
+class CamData(Schema):
+    cam_id = fields.Integer(
             required=True,
             default=None
         )
-    ))
-    is_online: bool = dataclasses.field(metadata=desert.metadata(
-        fields.Integer(
+
+    is_online = fields.Integer(
             required=True,
             default=False
         )
-    ))
 
 
-@dataclass
-class GetCamerasResponse:
-    cameras: List[CamData] = dataclasses.field(metadata=desert.metadata(
-        fields.List(CamData)
-    ))
-    success: bool = dataclasses.field(metadata=desert.metadata(
-        fields.Boolean()
-    ))
-
-    def dump(self):
-        schema = desert.schema(GetCamerasResponse)
-        return schema.dump(self)
+class GetCamerasResponse(Schema):
+    cameras = fields.List(fields.Nested(CamData))
+    success = fields.Boolean()
 
 
 @dataclass

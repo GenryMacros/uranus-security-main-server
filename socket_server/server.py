@@ -52,17 +52,15 @@ def overseer_task():
 @sio.event
 async def get_cameras(sid):
     logger.info(f"[SERVER] Client {sid} called GET_CAMERAS")
-    response: GetCamerasResponse = GetCamerasResponse([], True)
-
+    response: GetCamerasResponse = GetCamerasResponse()
+    response_dict = dict(cameras=[], success=True)
     if users_info_map.get(sid, None) is None or not users_info_map[sid].is_authenticated():
         logger.info(f"[SERVER] Client {sid} GET_CAMERAS rejected")
-        response.success = False
+        response_dict["success"] = False
     else:
         for cam in cameras:
-            cam_data: CamData = CamData(cam_id=cam, is_online=True)
-            response.cameras.append(cam_data)
-
-    return response.dump()
+            response_dict["cameras"].append(dict(cam_id=cam, is_online=True))
+    return response.dump(response_dict)
 
 
 @sio.event
