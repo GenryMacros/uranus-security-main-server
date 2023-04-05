@@ -1,3 +1,6 @@
+import json
+from dataclasses import dataclass
+
 from flask import Flask
 from itsdangerous import SignatureExpired, BadTimeSignature
 
@@ -15,6 +18,7 @@ from api.exceptions.clients.handlers.exceptions_handlers import handle_invalid_t
 from api.exceptions.universal.exceptions import InvalidRequest
 from api.exceptions.universal.handlers.exception_handlers import handle_invalid_request_exception, \
     handle_value_exception
+from api.routes.cameras.cameras_routes import cameras_blueprint
 from api.routes.clients.clients_routes import users_blueprint
 
 
@@ -40,11 +44,24 @@ def register_error_handlers(app: Flask):
 
 def register_blueprints(app: Flask):
     app.register_blueprint(users_blueprint)
-    pass
+    app.register_blueprint(cameras_blueprint)
+
+
+@dataclass
+class Config:
+    host: str
+    port: int
+
+    @classmethod
+    def load_from_file(cls, file_path):
+        with open(file_path, 'r') as f:
+            config = json.load(f, object_hook=lambda d: Config(**d))
+        return config
 
 
 if __name__ == '__main__':
     app = Flask(__name__, template_folder='templates')
+    config = Config.load_from_file("config.json")
     register_blueprints(app)
     register_error_handlers(app)
-    app.run(host="localhost", port=8010)
+    app.run(host=config.host, port=config.port)
