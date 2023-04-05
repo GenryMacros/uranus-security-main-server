@@ -2,8 +2,8 @@ from flask import Blueprint
 from flask import request
 
 from api.repositories.clients.clients_repository import ClientRepository
-from api.schemas.clients.clients_input_schemas import ClientCredentials, ClientSignup, ClientTokenRefresh
-from api.schemas.clients.clients_output_schemas import LoginResponse
+from api.schemas.clients.clients_input import ClientCredentials, ClientSignup, ClientTokenRefresh
+from api.schemas.clients.clients_output import LoginResponse
 from api.services.clients.clients_services import ClientService
 
 

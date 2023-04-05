@@ -6,7 +6,7 @@ from api.models.clients.clients_models import ClientsSecrets, Clients, ClientsAd
     ClientsConfirmations
 from api.repositories.clients.interfaces.iclients_repository import ClientRepositoryInterface
 from api.repositories.db.mysql_db_context import AppDBConf
-from api.schemas.clients.clients_output_schemas import ClientContactSchema, ClientSecretSchema
+from api.schemas.clients.clients_output import ClientContactSchema, ClientSecretSchema
 from api.schemas.clients.clients_schemas import ClientPasswordData
 
 

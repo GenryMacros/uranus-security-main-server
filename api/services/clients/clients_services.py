@@ -4,8 +4,8 @@ import time
 from api.exceptions.clients.exceptions import InvalidTokens, TokenIsExpired, InvalidCredentials, SignupFailed, \
     TokenIsInvalid
 from api.repositories.clients.clients_repository import ClientRepositoryInterface
-from api.schemas.clients.clients_input_schemas import ClientCredentials, ClientSignup, ClientTokenRefresh
-from api.schemas.clients.clients_output_schemas import LoginResponse, ClientSecretSchema, ClientLocationSchema, \
+from api.schemas.clients.clients_input import ClientCredentials, ClientSignup, ClientTokenRefresh
+from api.schemas.clients.clients_output import LoginResponse, ClientSecretSchema, ClientLocationSchema, \
     ClientContactSchema, ClientsSignupResponse
 from api.services.clients.clients_confirmator import ClientsConfirmator
 from api.utils.jwt.jwt_handler import JwtHandler

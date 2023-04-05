@@ -1,6 +1,8 @@
 from flask import Flask
 from itsdangerous import SignatureExpired, BadTimeSignature
 
+from api.exceptions.cameras.exceptions import CamerasNotFound
+from api.exceptions.cameras.handlers.exceptions_handlers import handle_cameras_exists_exception
 from api.exceptions.clients.exceptions import InvalidTokens, InvalidCredentials, SignupFailed, ClientExists, \
     ClientNotFound, TokenIsExpired, FirstNameWrongFormat, LastNameWrongFormat, EmailWrongFormat, PhoneWrongFormat, \
     TelegramWrongFormat, TokenIsInvalid
@@ -33,6 +35,7 @@ def register_error_handlers(app: Flask):
     app.register_error_handler(BadTimeSignature, handle_signature_invalid_exception)
     app.register_error_handler(TokenIsInvalid, handle_invalid_token_exception)
     app.register_error_handler(ValueError, handle_value_exception)
+    app.register_error_handler(CamerasNotFound, handle_cameras_exists_exception)
 
 
 def register_blueprints(app: Flask):

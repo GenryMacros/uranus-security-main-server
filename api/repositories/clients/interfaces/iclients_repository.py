@@ -3,7 +3,7 @@ from typing import Tuple
 
 from api.models.clients.clients_models import ClientsSecrets, Clients, ClientsAdditionalContacts, ClientsLocations, \
     ClientsConfirmations
-from api.schemas.clients.clients_output_schemas import ClientSecretSchema, ClientContactSchema
+from api.schemas.clients.clients_output import ClientSecretSchema, ClientContactSchema
 from api.schemas.clients.clients_schemas import ClientPasswordData
 
 
