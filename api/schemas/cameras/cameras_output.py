@@ -9,12 +9,14 @@ from marshmallow_dataclass import dataclass
 @dataclass
 class Cameras:
     cam_names: List[int] = dataclasses.field(metadata=desert.metadata(
-        fields.String(
+        fields.List(
+            fields.Integer,
             required=True
         )
     ))
     cam_ids: List[int] = dataclasses.field(metadata=desert.metadata(
-        fields.Integer(
+        fields.List(
+            fields.Integer,
             required=True
         )
     ))

@@ -18,12 +18,13 @@ cameras_service = CamerasService(ClientRepository(), CamerasRepository())
 def add():
     request_data: CamsRegister = CamsRegister().load(request.get_json())
     cameras_service.register(request_data)
-    return 200
+    return DefaultResponse(success=True).dump(), 200
 
 
 @cameras_blueprint.route('/cameras', methods=['POST'])
 def get_cameras():
-    request_data: CamsGet = CamsGet().load(request.get_json())
+    body = request.get_json()
+    request_data: CamsGet = CamsGet.load(body)
     cams: Cameras = cameras_service.get_cams(request_data)
 
     return cams.dump(), 200
@@ -31,7 +32,7 @@ def get_cameras():
 
 @cameras_blueprint.route('/cameras', methods=['DELETE'])
 def delete_cameras():
-    request_data: CamsDelete = CamsDelete().load(request.get_json())
+    request_data: CamsDelete = CamsDelete.load(request.get_json())
     cameras_service.delete_cams(request_data)
 
     return DefaultResponse().dump(), 200

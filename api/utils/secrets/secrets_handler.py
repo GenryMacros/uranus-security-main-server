@@ -31,8 +31,8 @@ class SecretsHandler:
 
     @classmethod
     def is_signature_valid(cls, public_key: str, signature: bytes, message: bytes) -> bool:
-        pubkey_decoded = base64.b64decode(public_key)
-        rsa_pubkey = RSA.importKey(pubkey_decoded)
+        #pubkey_decoded = base64.b64decode(public_key)
+        rsa_pubkey = RSA.importKey(public_key)
         verifier = PKCS115_SigScheme(rsa_pubkey)
         msg_hash = SHA256.new(message)
         try:
@@ -45,7 +45,7 @@ class SecretsHandler:
     def sign_message(cls, message: bytes, private_key: str) -> bytes:
         msg_hash = SHA256.new(message)
         rsa_private_key = RSA.importKey(private_key)
-        signer = PKCS1_v1_5.new(rsa_private_key)
+        signer = PKCS115_SigScheme(rsa_private_key)
         sig = signer.sign(msg_hash)
         return base64.b64encode(sig)
 

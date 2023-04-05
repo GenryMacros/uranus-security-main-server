@@ -11,7 +11,7 @@ from api.exceptions.clients.exceptions import EmailWrongFormat
 @dataclass
 class ClientCredentials:
 
-    login: str = dataclasses.field(metadata=desert.metadata(
+    username: str = dataclasses.field(metadata=desert.metadata(
         fields.String(
             required=True
         )
@@ -26,7 +26,7 @@ class ClientCredentials:
     def load(cls, json_data):
         schema = desert.schema(ClientCredentials)
         loaded_credentials: ClientCredentials = schema.load(json_data)
-        if len(loaded_credentials.login) < 5 or len(loaded_credentials.login) >= 20:
+        if len(loaded_credentials.username) < 5 or len(loaded_credentials.username) >= 20:
             raise ValueError("Login or password is invalid")
         elif len(loaded_credentials.password) < 10 or len(loaded_credentials.password) >= 20:
             raise ValueError("Login or password is invalid")

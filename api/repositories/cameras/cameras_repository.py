@@ -23,7 +23,7 @@ class CamerasRepository(CamerasRepositoryInterface):
         return new_cam
 
     def get_cams_by_client_id(self, client_id: int) -> List[Cameras]:
-        cameras = self.db_context.query(Cameras).filter(Cameras.client_id == client_id and Cameras.is_deleted is False).ToList()
+        cameras = self.db_context.query(Cameras).filter(Cameras.client_id == client_id and Cameras.is_deleted is False)
         return cameras
 
     def is_cam_in_db(self, client_id: int, cam_name: str) -> bool:

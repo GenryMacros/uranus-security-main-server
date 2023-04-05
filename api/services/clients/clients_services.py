@@ -26,7 +26,7 @@ class ClientService:
         self.confirmation_method = ConfirmationMethod.SHORT_CODE
 
     def login(self, credentials: ClientCredentials) -> LoginResponse:
-        client = self.user_repository.get_client_by_username(credentials.login)
+        client = self.user_repository.get_client_by_username(credentials.username)
         client_pass_data = self.user_repository.get_client_password_data(client.id)
         credentials_password_hash = SecretsHandler.calculate_hash(credentials.password, client_pass_data.password_salt)
         if client_pass_data.password_hash != credentials_password_hash:

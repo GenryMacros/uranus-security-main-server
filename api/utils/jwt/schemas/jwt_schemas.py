@@ -23,7 +23,7 @@ class JwtBody:
         loaded_credentials: JwtBody = schema.load(json_data)
         email_regex = re.compile(
             r"^([-!#-'*+/-9=?A-Z^-~]+(\.[-!#-'*+/-9=?A-Z^-~]+)*|\"([]!#-[^-~ \t]|(\\[\t -~]))+\")@([-!#-'*+/-9=?A-Z^-~]+(\.[-!#-'*+/-9=?A-Z^-~]+)*|\[[\t -Z^-~]*])")
-        if re.fullmatch(email_regex, loaded_credentials.email):
+        if not re.fullmatch(email_regex, loaded_credentials.email):
             raise EmailWrongFormat()
         return loaded_credentials
 

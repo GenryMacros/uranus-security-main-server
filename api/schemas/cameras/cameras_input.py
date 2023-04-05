@@ -16,8 +16,8 @@ class CamData(Schema):
 
 
 class CamsRegister(Schema):
-    id: int = fields.List(fields.Integer)
-    auth_token: str = fields.List(fields.String)
+    id: int = fields.Integer()
+    auth_token: str = fields.String()
     cameras = fields.List(fields.Nested(CamData))
 
 

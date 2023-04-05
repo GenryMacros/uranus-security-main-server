@@ -51,13 +51,15 @@ class JwtHandler:
 
         header_encode = header_encode.decode("utf-8")
         body_encode = body_encode.decode("utf-8")
-        signature = base64.b64encode(signature).decode("utf-8")
-        return f"{header_encode}.{str(body_encode)}.{str(signature)}"
+        signature = signature.decode("utf-8")
+        return f"{header_encode}.{body_encode}.{signature}"
 
     @classmethod
     def is_token_valid(cls, token: str, client_public_key: str) -> bool:
+        #client_public_key = SecretsHandler.cut_public_key(client_public_key)
         jwt_header, jwt_body, signature = token.split('.')
         pre_signed_message = f"{jwt_header.encode('utf-8')}.{jwt_body.encode('utf-8')}".encode('utf-8')
+        signature = base64.b64decode(signature.encode('utf-8'))
         is_signature_valid = SecretsHandler.is_signature_valid(
             public_key=client_public_key,
             signature=signature,
@@ -68,8 +70,8 @@ class JwtHandler:
     @classmethod
     def retrieve_body_info_from_token_jwt(cls, token: str) -> JwtBody:
         jwt_header, jwt_body, signature = token.split('.')
-        jwt_body = base64.b64decode(jwt_body).decode('utf-8')
-        return JwtBody.load(base64.b64decode(jwt_body).decode('utf-8'))
+        jwt_body = eval(base64.b64decode(jwt_body).decode('utf-8'))
+        return JwtBody.load(jwt_body)
 
     @classmethod
     def retrieve_body_info_from_token_refresh(cls, token: str) -> RefreshBody:

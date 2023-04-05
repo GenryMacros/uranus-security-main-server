@@ -1,3 +1,4 @@
+import base64
 import enum
 import time
 
@@ -23,15 +24,15 @@ class CamerasService:
         self.confirmation_method = ConfirmationMethod.SHORT_CODE
 
     def register(self, data: CamsRegister) -> None:
-        self.check_jwt_token(data.auth_token, data.id)
-        for cam in data.cameras:
-            if not self.cameras_repository.is_cam_in_db(data.id, str(cam.cam_id)):
-                self.cameras_repository.add_cam(data.id, str(cam.cam_id))
+        self.check_jwt_token(data["auth_token"], data["id"])
+        for cam in data["cameras"]:
+            if not self.cameras_repository.is_cam_in_db(data["id"], str(cam["cam_id"])):
+                self.cameras_repository.add_cam(data["id"], str(cam["cam_id"]))
 
     def get_cams(self, data: CamsGet) -> Cameras:
         self.check_jwt_token(data.auth_token, data.id)
         cams = self.cameras_repository.get_cams_by_client_id(data.id)
-        output = Cameras()
+        output = Cameras([], [])
         for cam in cams:
             output.cam_ids.append(cam.id)
             output.cam_names.append(cam.device_name)
