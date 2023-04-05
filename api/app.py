@@ -1,6 +1,7 @@
 import json
 from dataclasses import dataclass
 
+import marshmallow
 from flask import Flask
 from itsdangerous import SignatureExpired, BadTimeSignature
 
@@ -17,12 +18,13 @@ from api.exceptions.clients.handlers.exceptions_handlers import handle_invalid_t
     handle_invalid_token_exception
 from api.exceptions.universal.exceptions import InvalidRequest
 from api.exceptions.universal.handlers.exception_handlers import handle_invalid_request_exception, \
-    handle_value_exception
+    handle_value_exception, handle_validation_exception
 from api.routes.cameras.cameras_routes import cameras_blueprint
 from api.routes.clients.clients_routes import users_blueprint
 
 
 def register_error_handlers(app: Flask):
+    app.register_error_handler(marshmallow.exceptions.ValidationError, handle_validation_exception)
     app.register_error_handler(InvalidTokens, handle_invalid_tokens_exception)
     app.register_error_handler(InvalidCredentials, handle_invalid_credentials_exception)
     app.register_error_handler(SignupFailed, handle_signup_failure_exception)
