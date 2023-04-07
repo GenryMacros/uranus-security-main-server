@@ -7,6 +7,7 @@ from aiohttp import web
 import socketio
 from ai.background_subtractor import BackgroundSubtractor
 from ai.streamer import RealTimeStreamer
+from socket_server.requester import Requester
 from socket_server.utils.recorder import Recorder
 from socket_server.overseer import Overseer
 from socket_server.schemas.user import UserAuthData, GetCamerasResponse, AuthenticateResponse
@@ -28,6 +29,7 @@ cameras = [0]
 streamer = RealTimeStreamer(cameras)
 subtractor = BackgroundSubtractor()
 app = web.Application()
+requester = Requester()
 sio.attach(app)
 last_cam2frame = None
 recorder = Recorder(cameras)
@@ -43,8 +45,21 @@ async def get_cameras(sid):
         logger.info(f"[SERVER] Client {sid} GET_CAMERAS rejected")
         response_dict["success"] = False
     else:
-        for cam in cameras:
-            response_dict["cameras"].append(dict(cam_id=cam, is_online=True))
+        registered_cameras = requester.get_cameras(users_info_map[sid])
+        if registered_cameras.success:
+            server_registered_cams = [int(cam) for cam in registered_cameras.cam_names]
+            non_registered = set(cameras) - set(server_registered_cams)
+            if non_registered:
+                requester.register_cameras(users_info_map[sid], non_registered)
+            full_cams_list = set(server_registered_cams).union(non_registered)
+            for cam in full_cams_list:
+                if cam in cameras:
+                    is_online = True
+                else:
+                    is_online = False
+                response_dict["cameras"].append(dict(cam_id=cam, is_online=is_online))
+        else:
+            response_dict["success"] = False
     return response.dump(response_dict)
 
 
@@ -94,5 +109,5 @@ def disconnect(sid):
 if __name__ == '__main__':
     config_path = "configs/overseer_config.json"
     overseer = Overseer(sio, config_path)
-    overseer.start_loop()
+    overseer.loop_proc.start()
     web.run_app(app, host=HOST, port=PORT)

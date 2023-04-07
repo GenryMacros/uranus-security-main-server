@@ -1,5 +1,6 @@
 import json
 import logging
+import multiprocessing
 import os.path
 import sys
 from threading import Thread
@@ -33,7 +34,7 @@ class Overseer:
         self.recorder = Recorder(self.cameras, record_path=config["record_path"])
         self.subtractor = BackgroundSubtractor(dramatic_change_thresh=config["invasion_threshold"])
         self.cam_frame_4 = CamFrame4((1920, 1080), frame_name="CAMERAS")
-        self.loop_thread = Thread(target=self.loop())
+        self.loop_proc = Thread(target=self.loop)
 
     def load_from_json(self):
         if not os.path.exists(self.config_path):
@@ -60,9 +61,6 @@ class Overseer:
                         self.last_cam2invasion[id] = False
             self.last_cam2frame = cam2frame
             self.visualize()
-
-    def start_loop(self):
-        self.loop_thread.start()
 
     def visualize(self):
         if self.last_cam2frame is None:

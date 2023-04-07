@@ -53,7 +53,7 @@ class CamData(Schema):
             default=None
         )
 
-    is_online = fields.Integer(
+    is_online = fields.Boolean(
             required=True,
             default=False
         )

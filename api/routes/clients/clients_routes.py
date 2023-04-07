@@ -4,11 +4,17 @@ from flask import request
 from api.repositories.clients.clients_repository import ClientRepository
 from api.schemas.clients.clients_input import ClientCredentials, ClientSignup, ClientTokenRefresh
 from api.schemas.clients.clients_output import LoginResponse
+from api.schemas.default_response import DefaultResponse
 from api.services.clients.clients_services import ClientService
 
 
 users_blueprint = Blueprint("users_blueprint", __name__)
 client_service = ClientService(ClientRepository())
+
+
+@users_blueprint.route('/', methods=['GET'])
+def check():
+    return DefaultResponse(success=True).dump(), 200
 
 
 @users_blueprint.route('/users/login', methods=['POST'])

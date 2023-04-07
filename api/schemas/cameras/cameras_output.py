@@ -20,6 +20,11 @@ class Cameras:
             required=True
         )
     ))
+    success: bool = dataclasses.field(metadata=desert.metadata(
+        fields.Boolean(
+            required=False
+        )
+    ))
 
     def dump(self):
         schema = desert.schema(Cameras)

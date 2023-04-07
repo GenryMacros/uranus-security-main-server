@@ -32,7 +32,7 @@ class CamerasService:
     def get_cams(self, data: CamsGet) -> Cameras:
         self.check_jwt_token(data.auth_token, data.id)
         cams = self.cameras_repository.get_cams_by_client_id(data.id)
-        output = Cameras([], [])
+        output = Cameras([], [], True)
         for cam in cams:
             output.cam_ids.append(cam.id)
             output.cam_names.append(cam.device_name)
