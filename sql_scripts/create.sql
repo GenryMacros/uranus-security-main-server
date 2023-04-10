@@ -73,6 +73,7 @@ CREATE TABLE Intruder(
 )
 
 CREATE TABLE InvasionIntruders(
+    id INT IDENTITY(1,1) PRIMARY KEY,
     invasion_id INT FOREIGN KEY REFERENCES Invasion(id) ON DELETE CASCADE,
     intruder_id INT FOREIGN KEY REFERENCES Intruder(id) ON DELETE CASCADE
 )
