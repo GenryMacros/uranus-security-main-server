@@ -52,7 +52,7 @@ class Requester:
 
     def get_cameras(self, auth_data: UserAuthData) -> Cameras:
         if self.is_server_available():
-            response = requests.post(f"{self.full_api_url}/cameras", json={
+            response = requests.post(f"{self.full_api_url}/clients/cameras", json={
                 "id": auth_data.userId,
                 "auth_token": auth_data.token
             })
@@ -66,7 +66,7 @@ class Requester:
 
     def register_cameras(self, auth_data: UserAuthData, cams: Set[int]) -> DefaultResponse:
         if self.is_server_available():
-            response = requests.post(f"{self.full_api_url}/cameras/add", json={
+            response = requests.post(f"{self.full_api_url}/clients/cameras/add", json={
                 "id": auth_data.userId,
                 "auth_token": auth_data.token,
                 "cameras": [{"cam_id": str(cam)} for cam in cams]
