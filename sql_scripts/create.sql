@@ -58,3 +58,21 @@ CREATE TABLE ClientsConfirmations(
     confirmation_code VARCHAR(5),
     expiration_date VARCHAR(11)
 )
+
+CREATE TABLE Invasion(
+	id INT IDENTITY(1,1) PRIMARY KEY,
+	camera_id INT FOREIGN KEY REFERENCES Cameras(id) ON DELETE CASCADE,
+	video_path VARCHAR(50),
+	created VARCHAR(11),
+	is_deleted BIT
+)
+
+CREATE TABLE Intruder(
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    name VARCHAR(10),
+)
+
+CREATE TABLE InvasionIntruders(
+    invasion_id INT FOREIGN KEY REFERENCES Invasion(id) ON DELETE CASCADE,
+    intruder_id INT FOREIGN KEY REFERENCES Intruder(id) ON DELETE CASCADE
+)
