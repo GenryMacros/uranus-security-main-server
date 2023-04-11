@@ -1,6 +1,5 @@
 import json
 import logging
-import multiprocessing
 import os.path
 import sys
 from threading import Thread
@@ -9,6 +8,7 @@ import cv2
 
 from ai.background_subtractor import BackgroundSubtractor
 from ai.streamer import RealTimeStreamer
+from socket_server.requester import Requester
 from socket_server.utils.recorder import Recorder
 from socket_server.utils.visualizer import CamFrame, CamFrame4, InvasionFrame
 
@@ -23,7 +23,7 @@ if IS_LOG:
 
 class Overseer:
 
-    def __init__(self, client, config_path="configs/overseer_config.json"):
+    def __init__(self, client, cam_infos, auth_data: dict, config_path="configs/overseer_config.json"):
         self.config_path = config_path
         config = self.load_from_json()
         self.last_cam2frame = None
@@ -34,6 +34,9 @@ class Overseer:
         self.recorder = Recorder(self.cameras, record_path=config["record_path"])
         self.subtractor = BackgroundSubtractor(dramatic_change_thresh=config["invasion_threshold"])
         self.cam_frame_4 = CamFrame4((1920, 1080), frame_name="CAMERAS")
+        self.auth_data = auth_data
+        self.requster = Requester()
+        self.cam_infos = cam_infos
         self.loop_proc = Thread(target=self.loop)
 
     def load_from_json(self):
@@ -56,7 +59,13 @@ class Overseer:
                     self.recorder.start_record(int(id))
                     self.client.emit('INVASION', {'schemas': 'INVASION', 'cam_id': id})
                 else:
+                    is_record = self.recorder.is_record_started[id]
                     self.recorder.end_record(int(id))
+                    if is_record != self.recorder.is_record_started[id]:
+                        for _, data in self.auth_data.items():
+                            self.requster.register_invasion(os.path.join(self.recorder.records[id].record_folder,
+                                                                         "cam.avi"),
+                                                            self.cam_infos[int(id)].back_id, data)
                     if not self.recorder.is_record_started[int(id)]:
                         self.last_cam2invasion[id] = False
             self.last_cam2frame = cam2frame

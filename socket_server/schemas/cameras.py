@@ -1,9 +1,16 @@
+import desert
 import dataclasses
 from typing import List
 
-import desert
 from marshmallow import fields
 from marshmallow_dataclass import dataclass
+
+
+class CamInfo:
+    def __init__(self, local_name: int, back_id: int, is_online: bool):
+        self.local_name = local_name
+        self.back_id = back_id
+        self.is_online = is_online
 
 
 @dataclass

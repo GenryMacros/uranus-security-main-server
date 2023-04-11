@@ -31,7 +31,8 @@ class InvasionsService:
         self.check_jwt_token(invasion.auth_token, invasion.client_id)
         added = self.invasions_repository.add_invasion(invasion)
         return InvasionSchema(
-            id=added.id
+            id=added.id,
+            success=True
         )
 
     def get_invasions(self, data: InvasionGet) -> GetInvasionsOutput:

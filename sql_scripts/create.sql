@@ -62,7 +62,7 @@ CREATE TABLE ClientsConfirmations(
 CREATE TABLE Invasion(
 	id INT IDENTITY(1,1) PRIMARY KEY,
 	camera_id INT FOREIGN KEY REFERENCES Cameras(id) ON DELETE CASCADE,
-	video_path VARCHAR(50),
+	video_path VARCHAR(100),
 	created VARCHAR(11),
 	is_deleted BIT
 )

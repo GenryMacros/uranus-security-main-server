@@ -76,3 +76,12 @@ class Requester:
             response_data: DefaultResponse = DefaultResponse(success=False,
                                                              reason="Can't connect to main server.")
         return response_data
+
+    def register_invasion(self, file_path: str, cam_id: int, auth_data: UserAuthData):
+        if self.is_server_available():
+            response = requests.post(f"{self.full_api_url}/clients/cameras/invasions/add", json={
+                "client_id": auth_data.userId,
+                "auth_token": auth_data.token,
+                "cam_id": cam_id,
+                "path": file_path
+            })

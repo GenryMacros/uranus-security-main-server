@@ -1,5 +1,6 @@
 import os
 import time
+from pathlib import Path
 from typing import List
 from datetime import datetime
 from utils.stream_record import StreamRecorder
@@ -8,7 +9,7 @@ from utils.stream_record import StreamRecorder
 class Recorder:
     WAIT_BEFORE_RECORD_END = 2
 
-    def __init__(self, cam_ids: List[int], record_path="../recorded"):
+    def __init__(self, cam_ids: List[int], record_path=os.path.join(Path.cwd(), "api", "recorded")):
         self.record_path = record_path
         self.cam_ids = cam_ids
         self.is_record_started = {}
@@ -31,7 +32,8 @@ class Recorder:
 
         self.is_record_started[cam_id] = True
         dt_string = datetime.now().strftime("%Y-%m-%d %H-%M-%S").replace(' ', 'T')
-        self.records[cam_id] = StreamRecorder(os.path.join(self.record_path, str(cam_id), dt_string))
+        record_path = os.path.join(self.record_path, str(cam_id), dt_string)
+        self.records[cam_id] = StreamRecorder(record_path)
         self.end_called[cam_id] = None
 
     def end_record(self, cam_id: int):

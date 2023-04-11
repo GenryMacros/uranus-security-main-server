@@ -13,6 +13,11 @@ class InvasionSchema:
             required=True
         )
     ))
+    success: bool = dataclasses.field(metadata=desert.metadata(
+        fields.String(
+            required=True
+        )
+    ))
 
     def dump(self):
         schema = desert.schema(InvasionSchema)
