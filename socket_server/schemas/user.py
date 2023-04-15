@@ -48,6 +48,11 @@ class UserAuthData:
 
 
 class CamData(Schema):
+    cam_name = fields.Integer(
+            required=True,
+            default=None
+        )
+
     cam_id = fields.Integer(
             required=True,
             default=None

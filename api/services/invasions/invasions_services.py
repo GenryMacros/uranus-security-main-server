@@ -39,7 +39,7 @@ class InvasionsService:
         self.check_jwt_token(data.auth_token, data.client_id)
         invasions = self.invasions_repository.get_invasions_after_date(data.date, data.cam_id)
         response = GetInvasionsOutput()
-        response_editable = {"invasions": []}
+        response_editable = {"invasions": [], "success": False}
         timestamp = int(time.time())
         download_token = self.__gen_download_token(data.client_id, timestamp).decode('utf-8')
         for inv in invasions:
@@ -59,7 +59,7 @@ class InvasionsService:
                            f"timestamp={timestamp}&"
                            f"token={download_token}"
             ))
-
+        response_editable['success'] = True
         return GetInvasionsOutput.dump(response, response_editable)
 
     def __gen_download_token(self, client_id: int, timestamp: int):

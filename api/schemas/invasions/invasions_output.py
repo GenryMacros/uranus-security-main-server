@@ -45,3 +45,10 @@ class InvasionData(Schema):
 
 class GetInvasionsOutput(Schema):
     invasions = fields.List(fields.Nested(InvasionData))
+    success = fields.Boolean(
+        required=True,
+        default=False
+    )
+    reason = fields.String(
+        required=False
+    )

@@ -7,6 +7,7 @@ from aiohttp import web
 import socketio
 from ai.background_subtractor import BackgroundSubtractor
 from ai.streamer import RealTimeStreamer
+from socket_server.events import EventTypeOut
 from socket_server.requester import Requester
 from socket_server.schemas.cameras import CamInfo
 from socket_server.utils.recorder import Recorder
@@ -48,7 +49,9 @@ async def get_cameras(sid):
         response_dict["success"] = False
     else:
         for _, info in cam_infos.items():
-            response_dict["cameras"].append(dict(cam_id=info.local_name, is_online=info.is_online))
+            response_dict["cameras"].append(dict(cam_name=info.local_name,
+                                                 cam_id=info.back_id,
+                                                 is_online=info.is_online))
     return response.dump(response_dict)
 
 
@@ -56,7 +59,7 @@ async def get_cameras(sid):
 async def connect(sid, environ):
     logger.info(f"[SERVER] New client connected: {sid} ")
     users_info_map[sid] = UserAuthData(None, None, None, None)
-    await sio.emit('ASK_AUTHENTICATE', to=sid)
+    await sio.emit(EventTypeOut.ASK_AUTHENTICATE.value, to=sid)
 
 
 @sio.event
@@ -95,7 +98,7 @@ async def read_frame(sid):
         sent_cam2frame = streamer.read_frame()[0].tolist()
     else:
         sent_cam2frame = None
-    await sio.emit("FRAMES", data={
+    await sio.emit(EventTypeOut.FRAMES.value, data={
         "frames": {
             "buffer": sent_cam2frame,
             "id": 0

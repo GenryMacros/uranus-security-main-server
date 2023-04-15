@@ -2,6 +2,7 @@ import json
 import logging
 import os.path
 import sys
+import time
 from threading import Thread
 
 import cv2
@@ -37,6 +38,7 @@ class Overseer:
         self.auth_data = auth_data
         self.requster = Requester()
         self.cam_infos = cam_infos
+        self.dramatic_change_durations = {cam: 0 for cam in self.cameras}
         self.loop_proc = Thread(target=self.loop)
 
     def load_from_json(self):
@@ -54,11 +56,16 @@ class Overseer:
             self.recorder.record(cam2frame)
             for id, frame in last_cam2frame.items():
                 if self.subtractor.is_dramatically_changed(frame):
-                    logger.info("[OVERSEER] POTENTIAL INVASION")
-                    self.last_cam2invasion[id] = True
-                    self.recorder.start_record(int(id))
-                    self.client.emit('INVASION', {'schemas': 'INVASION', 'cam_id': id})
+                    if self.dramatic_change_durations[id] == 0:
+                        self.dramatic_change_durations[id] = time.time()
+                    elif time.time() - self.dramatic_change_durations[id] > 1:
+                        logger.info("[OVERSEER] POTENTIAL INVASION")
+                        self.last_cam2invasion[id] = True
+                        self.recorder.start_record(int(id))
+                        self.client.emit('INVASION', {'schemas': 'INVASION', 'cam_id': id})
+
                 else:
+                    self.dramatic_change_durations[id] = 0
                     is_record = self.recorder.is_record_started[id]
                     self.recorder.end_record(int(id))
                     if is_record != self.recorder.is_record_started[id]:

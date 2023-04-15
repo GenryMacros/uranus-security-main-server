@@ -17,7 +17,7 @@ def check():
     return DefaultResponse(success=True).dump(), 200
 
 
-@users_blueprint.route('/users/login', methods=['POST'])
+@users_blueprint.route('/clients/login', methods=['POST'])
 def login():
     request_data: ClientCredentials = ClientCredentials.load(request.get_json())
 
@@ -27,7 +27,7 @@ def login():
     return LoginResponse.dump(response), 200, header
 
 
-@users_blueprint.route('/users/signup', methods=['POST'])
+@users_blueprint.route('/clients/signup', methods=['POST'])
 def signup():
     request_data: ClientSignup = ClientSignup.load(request.get_json())
 
@@ -36,7 +36,7 @@ def signup():
     return response.dump(), 200
 
 
-@users_blueprint.route('/users/confirm', methods=['GET'])
+@users_blueprint.route('/clients/confirm', methods=['GET'])
 def confirm():
     confirmation_token = request.args.get("token", None)
     client_id = int(request.args.get("id", None))
@@ -46,7 +46,7 @@ def confirm():
     return response.dump(), 200, header
 
 
-@users_blueprint.route('/users/check_token', methods=['POST'])
+@users_blueprint.route('/clients/check_token', methods=['POST'])
 def check_token():
     request_data: ClientCredentials = ClientCredentials.load(request.get_json())
 
@@ -56,7 +56,7 @@ def check_token():
     return LoginResponse.dump(response), 200, header
 
 
-@users_blueprint.route('/users/refresh', methods=['POST'])
+@users_blueprint.route('/clients/refresh', methods=['POST'])
 def refresh_client_jwt():
     request_data: ClientTokenRefresh = ClientTokenRefresh.load(request.get_json())
 
@@ -66,7 +66,7 @@ def refresh_client_jwt():
     return refresh_response.dump(), 200, header
 
 
-@users_blueprint.route('/users/location', methods=['GET'])
+@users_blueprint.route('/clients/location', methods=['GET'])
 def get_client_location():
     authorization = request.headers.get("Authorization")
     client_id = request.args.get("client_id", None)
@@ -79,7 +79,7 @@ def get_client_location():
     return client_location.dump(), 200, header
 
 
-@users_blueprint.route('/users/contact', methods=['GET'])
+@users_blueprint.route('/clients/contact', methods=['GET'])
 def get_client_contact():
     authorization = request.headers.get("Authorization")
     client_id = request.args.get("client_id", None)

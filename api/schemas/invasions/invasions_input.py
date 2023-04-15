@@ -57,8 +57,8 @@ class InvasionGet:
             required=True
         )
     ))
-    date: str = dataclasses.field(metadata=desert.metadata(
-        fields.String(
+    date: int = dataclasses.field(metadata=desert.metadata(
+        fields.Integer(
             required=True
         )
     ))
