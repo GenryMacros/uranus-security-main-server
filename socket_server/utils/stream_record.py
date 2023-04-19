@@ -7,7 +7,7 @@ from numpy import ndarray
 
 
 class StreamRecorder:
-    REPLAY_FPS = 15
+    REPLAY_FPS = 30
     VIDEO_FILE_PREFIX = "cam"
 
     def __init__(self, record_folder: str):
@@ -27,8 +27,8 @@ class StreamRecorder:
             os.makedirs(self.record_folder, exist_ok=True)
 
             resolution = frame.shape[:2][::-1]
-            fourcc = cv2.VideoWriter_fourcc('X', 'V', 'I', 'D')
-            video_file_name = f"{self.VIDEO_FILE_PREFIX}.avi"
+            fourcc = cv2.VideoWriter_fourcc(*'X264')
+            video_file_name = f"{self.VIDEO_FILE_PREFIX}.mp4"
             video_file_path = os.path.join(self.record_folder, video_file_name)
             self.out[cam_id] = cv2.VideoWriter(video_file_path, fourcc, self.REPLAY_FPS, resolution)
 

@@ -29,6 +29,10 @@ class InvasionData(Schema):
             required=True,
             default=None
     )
+    file_name = fields.String(
+        required=True,
+        default=None
+    )
     date = fields.Integer(
         required=True,
         default=None

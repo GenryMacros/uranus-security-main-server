@@ -64,7 +64,7 @@ class Config:
 
 
 if __name__ == '__main__':
-    app = Flask(__name__, template_folder='templates')
+    app = Flask(__name__, template_folder='templates', static_folder='static')
     config = Config.load_from_file("config.json")
     register_blueprints(app)
     register_error_handlers(app)

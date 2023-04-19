@@ -1,6 +1,9 @@
 import base64
 import enum
+import os
 import time
+
+from flask import url_for
 
 from api.exceptions.clients.exceptions import InvalidTokens, TokenIsExpired
 from api.repositories.cameras.interfaces.icameras_repository import CamerasRepositoryInterface
@@ -38,20 +41,19 @@ class InvasionsService:
     def get_invasions(self, data: InvasionGet) -> GetInvasionsOutput:
         self.check_jwt_token(data.auth_token, data.client_id)
         invasions = self.invasions_repository.get_invasions_after_date(data.date, data.cam_id)
+        cam_local_name = self.cameras_repository.get_by_id(data.cam_id).device_name
         response = GetInvasionsOutput()
         response_editable = {"invasions": [], "success": False}
         timestamp = int(time.time())
         download_token = self.__gen_download_token(data.client_id, timestamp).decode('utf-8')
+
         for inv in invasions:
+            invasion_name = inv.video_path.split("\\")[-2]
             response_editable["invasions"].append(dict(
                 id=inv.id,
                 date=inv.created,
-                link=f"http://localhost:8010/clients/cameras/invasions/download?"
-                     f"path={inv.video_path}&"
-                     f"is_short=0&"
-                     f"user_id={data.client_id}&"
-                     f"timestamp={timestamp}&"
-                     f"token={download_token}",
+                file_name=f"{invasion_name}.mp4",
+                link="http://10.0.2.2:8010" + url_for('static', filename=f"invasions/{str(cam_local_name)}/{invasion_name}/cam.mp4"),
                 link_short=f"http://localhost:8010/clients/cameras/invasions/download?"
                            f"path={inv.video_path}&"
                            f"is_short=1&"

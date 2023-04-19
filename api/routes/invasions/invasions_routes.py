@@ -1,4 +1,4 @@
-from flask import Blueprint, send_file
+from flask import Blueprint, send_file, render_template
 from flask import request
 
 from api.repositories.cameras.cameras_repository import CamerasRepository
@@ -47,7 +47,8 @@ def download_invasion():
     client_id = int(request.args.get("user_id", None))
     timestamp = request.args.get("timestamp", None)
     token = request.args.get("token", None)
-
+    token = token.replace(" ", "+")
+    file_path = file_path.replace("\\\\", "\\")
     if file_path is None or is_short is None or client_id is None or timestamp is None or token is None:
         return {"reason": "Invalid link", "success": False}, 400
     elif not invasions_service.check_download_token(token, client_id, timestamp):
@@ -55,5 +56,4 @@ def download_invasion():
 
     if is_short:
         pass
-
     return send_file(file_path, as_attachment=True)
