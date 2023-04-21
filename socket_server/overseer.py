@@ -1,15 +1,20 @@
+import asyncio
+import copy
 import json
 import logging
 import os.path
 import sys
 import time
 from threading import Thread
+from datetime import datetime
 
 import cv2
 
 from ai.background_subtractor import BackgroundSubtractor
 from ai.streamer import RealTimeStreamer
+from socket_server.events import EventTypeOut
 from socket_server.requester import Requester
+from socket_server.schemas.user import UserAuthData
 from socket_server.utils.recorder import Recorder
 from socket_server.utils.visualizer import CamFrame, CamFrame4, InvasionFrame
 
@@ -24,13 +29,15 @@ if IS_LOG:
 
 class Overseer:
 
-    def __init__(self, client, cam_infos, auth_data: dict, config_path="configs/overseer_config.json"):
+    def __init__(self, client, cam_infos, auth_data: UserAuthData, config_path="configs/overseer_config.json"):
         self.config_path = config_path
         config = self.load_from_json()
         self.last_cam2frame = None
         self.last_cam2invasion = {}
         self.client = client
+        self.client_sid = ""
         self.cameras = eval(config["cam_ids"])
+        self.notification_sent = False
         self.streamer = RealTimeStreamer(self.cameras)
         self.recorder = Recorder(self.cameras, record_path=config["record_path"])
         self.subtractor = BackgroundSubtractor(dramatic_change_thresh=config["invasion_threshold"])
@@ -50,6 +57,8 @@ class Overseer:
         return js
 
     def loop(self):
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
         while True:
             cam2frame = self.streamer.read_frame()
             last_cam2frame = self.subtractor.subtract(cam2frame)
@@ -62,21 +71,33 @@ class Overseer:
                         logger.info("[OVERSEER] POTENTIAL INVASION")
                         self.last_cam2invasion[id] = True
                         self.recorder.start_record(int(id))
-                        self.client.emit('INVASION', {'schemas': 'INVASION', 'cam_id': id})
-
+                        if not self.notification_sent:
+                            loop.run_until_complete(self.send_invasion_event(int(id)))
+                            self.notification_sent = True
                 else:
                     self.dramatic_change_durations[id] = 0
                     is_record = self.recorder.is_record_started[id]
                     self.recorder.end_record(int(id))
                     if is_record != self.recorder.is_record_started[id]:
-                        for _, data in self.auth_data.items():
-                            self.requster.register_invasion(os.path.join(self.recorder.records[id].record_folder,
-                                                                         "cam.avi"),
-                                                            self.cam_infos[int(id)].back_id, data)
+                        self.requster.register_invasion(os.path.join(self.recorder.records[id].record_folder,
+                                                                     "cam.mp4"),
+                                                        self.cam_infos[int(id)].back_id, self.auth_data)
+                        self.notification_sent = False
                     if not self.recorder.is_record_started[int(id)]:
                         self.last_cam2invasion[id] = False
             self.last_cam2frame = cam2frame
             self.visualize()
+
+    async def send_invasion_event(self, cam_id: int):
+        now = datetime.now()
+        await self.client.emit(EventTypeOut.INVASION.value,
+                               data={
+                                   "cam_id": cam_id,
+                                   "date": now.strftime("%m/%d/%Y_%H:%M:%S")
+                               }, to=self.client_sid)
+
+    def get_last_cam2frame(self):
+        return copy.copy(self.last_cam2frame)
 
     def visualize(self):
         if self.last_cam2frame is None:

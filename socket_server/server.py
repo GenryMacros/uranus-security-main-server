@@ -26,7 +26,7 @@ if IS_LOG:
 
 HOST = "localhost"
 PORT = 8086
-sio = socketio.AsyncServer(async_mode='aiohttp')
+sio = socketio.AsyncServer(async_mode='aiohttp', max_http_buffer_size=3000000)
 cameras = [0]
 streamer = RealTimeStreamer(cameras)
 subtractor = BackgroundSubtractor()
@@ -35,7 +35,7 @@ requester = Requester()
 sio.attach(app)
 last_cam2frame = None
 recorder = Recorder(cameras)
-users_info_map: Dict[str, UserAuthData] = {}
+auth_data: UserAuthData = UserAuthData(None, None, None, None)
 cam_infos: Dict[int, CamInfo] = {}
 
 
@@ -44,7 +44,7 @@ async def get_cameras(sid):
     logger.info(f"[SERVER] Client {sid} called GET_CAMERAS")
     response: GetCamerasResponse = GetCamerasResponse()
     response_dict = dict(cameras=[], success=True)
-    if users_info_map.get(sid, None) is None or not users_info_map[sid].is_authenticated():
+    if not auth_data.is_authenticated():
         logger.info(f"[SERVER] Client {sid} GET_CAMERAS rejected")
         response_dict["success"] = False
     else:
@@ -58,24 +58,26 @@ async def get_cameras(sid):
 @sio.event
 async def connect(sid, environ):
     logger.info(f"[SERVER] New client connected: {sid} ")
-    users_info_map[sid] = UserAuthData(None, None, None, None)
+    overseer.client_sid = sid
     await sio.emit(EventTypeOut.ASK_AUTHENTICATE.value, to=sid)
 
 
 @sio.event
 async def authenticate(sid, data):
+    global auth_data
     logger.info(f"[SERVER] Client {sid} authentication started")
     response: AuthenticateResponse = AuthenticateResponse(False)
     cam_infos.clear()
     try:
         user_data = UserAuthData.load(data)
-        users_info_map[sid] = user_data
-        registered_cameras = requester.get_cameras(users_info_map[sid])
+        overseer.auth_data = user_data
+        auth_data = user_data
+        registered_cameras = requester.get_cameras(auth_data)
         server_registered_cams = [int(cam) for cam in registered_cameras.cam_names]
         non_registered = set(cameras) - set(server_registered_cams)
         if non_registered:
-            requester.register_cameras(users_info_map[sid], non_registered)
-        full_cams_list = requester.get_cameras(users_info_map[sid])
+            requester.register_cameras(auth_data, non_registered)
+        full_cams_list = requester.get_cameras(auth_data)
         for cam in full_cams_list.cam_names:
             if cam in cameras:
                 is_online = True
@@ -92,12 +94,10 @@ async def authenticate(sid, data):
     return response.dump()
 
 
-async def read_frame(sid):
-    global last_cam2frame
-    if last_cam2frame is not None:
-        sent_cam2frame = streamer.read_frame()[0].tolist()
-    else:
-        sent_cam2frame = None
+@sio.event
+async def read_frames(sid):
+    sent_cam2frame = overseer.get_last_cam2frame()[0].tolist()
+
     await sio.emit(EventTypeOut.FRAMES.value, data={
         "frames": {
             "buffer": sent_cam2frame,
@@ -108,12 +108,11 @@ async def read_frame(sid):
 
 @sio.event
 def disconnect(sid):
-    users_info_map.pop(sid)
     logger.info(f"[SERVER] Client {sid} disconnected")
 
 
 if __name__ == '__main__':
     config_path = "configs/overseer_config.json"
-    overseer = Overseer(sio, cam_infos, users_info_map, config_path)
+    overseer = Overseer(sio, cam_infos, auth_data, config_path)
     overseer.loop_proc.start()
     web.run_app(app, host=HOST, port=PORT)

@@ -27,7 +27,7 @@ class StreamRecorder:
             os.makedirs(self.record_folder, exist_ok=True)
 
             resolution = frame.shape[:2][::-1]
-            fourcc = cv2.VideoWriter_fourcc(*'X264')
+            fourcc = cv2.VideoWriter_fourcc(*'MP4V')
             video_file_name = f"{self.VIDEO_FILE_PREFIX}.mp4"
             video_file_path = os.path.join(self.record_folder, video_file_name)
             self.out[cam_id] = cv2.VideoWriter(video_file_path, fourcc, self.REPLAY_FPS, resolution)

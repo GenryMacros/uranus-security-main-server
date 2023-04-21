@@ -49,11 +49,12 @@ class InvasionsService:
 
         for inv in invasions:
             invasion_name = inv.video_path.split("\\")[-2]
+            local_video_name = inv.video_path.split("\\")[-1]
             response_editable["invasions"].append(dict(
                 id=inv.id,
                 date=inv.created,
                 file_name=f"{invasion_name}.mp4",
-                link="http://10.0.2.2:8010" + url_for('static', filename=f"invasions/{str(cam_local_name)}/{invasion_name}/cam.mp4"),
+                link="http://10.0.2.2:8010" + url_for('static', filename=f"invasions/{str(cam_local_name)}/{invasion_name}/{local_video_name}"),
                 link_short=f"http://localhost:8010/clients/cameras/invasions/download?"
                            f"path={inv.video_path}&"
                            f"is_short=1&"
