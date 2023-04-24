@@ -7,7 +7,7 @@ from api.repositories.invasions.invasion_repository import InvasionRepository
 
 from api.schemas.default_response import DefaultResponse
 from api.schemas.invasions.invasions_input import InvasionAdd, InvasionGet, InvasionDelete
-from api.schemas.invasions.invasions_output import GetInvasionsOutput
+from api.schemas.invasions.invasions_output import GetInvasionsOutput, GetStatisticOutput
 from api.services.invasions.invasions_services import InvasionsService
 
 invasions_blueprint = Blueprint("invasions_blueprint", __name__)
@@ -30,6 +30,15 @@ def get_invasions():
     invasions: GetInvasionsOutput = invasions_service.get_invasions(request_data)
 
     return invasions, 200
+
+
+@invasions_blueprint.route('/clients/cameras/invasions/statistic', methods=['POST'])
+def get_invasion_statistic():
+    body = request.get_json()
+    request_data: InvasionGet = InvasionGet.load(body)
+    statistic: GetStatisticOutput = invasions_service.get_statistic(request_data)
+
+    return statistic.dump(), 200
 
 
 @invasions_blueprint.route('/clients/cameras/invasions', methods=['DELETE'])

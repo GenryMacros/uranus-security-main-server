@@ -10,7 +10,7 @@ from api.repositories.cameras.interfaces.icameras_repository import CamerasRepos
 from api.repositories.clients.clients_repository import ClientRepositoryInterface
 from api.repositories.invasions.interfaces.iinvasions_repository import InvasionsRepositoryInterface
 from api.schemas.invasions.invasions_input import InvasionAdd, InvasionGet, InvasionDelete
-from api.schemas.invasions.invasions_output import InvasionSchema, GetInvasionsOutput
+from api.schemas.invasions.invasions_output import InvasionSchema, GetInvasionsOutput, GetStatisticOutput
 from api.utils.jwt.jwt_handler import JwtHandler
 from api.utils.secrets.secrets_handler import SecretsHandler
 
@@ -64,6 +64,18 @@ class InvasionsService:
             ))
         response_editable['success'] = True
         return GetInvasionsOutput.dump(response, response_editable)
+
+    def get_statistic(self, data: InvasionGet) -> GetStatisticOutput:
+        self.check_jwt_token(data.auth_token, data.client_id)
+        result = GetStatisticOutput(None,None,None,None,None )
+        invasions = list(self.invasions_repository.get_invasions_after_date(data.date, data.cam_id))
+        invasions.sort(key=lambda x: int(x.created))
+        result.latest = int(invasions[-1].created)
+        result.duration = 5.1
+        result.intruders = 1.2
+        result.invasions = len(invasions)
+        result.success = True
+        return result
 
     def __gen_download_token(self, client_id: int, timestamp: int):
         public, private = self.clients_repository.get_client_keys(client_id)

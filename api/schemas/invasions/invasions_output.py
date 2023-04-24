@@ -7,6 +7,39 @@ from marshmallow_dataclass import dataclass
 
 
 @dataclass
+class GetStatisticOutput:
+    latest: int = dataclasses.field(metadata=desert.metadata(
+        fields.Integer(
+            required=True
+        )
+    ))
+    intruders: int = dataclasses.field(metadata=desert.metadata(
+        fields.Integer(
+            required=True
+        )
+    ))
+    duration: int = dataclasses.field(metadata=desert.metadata(
+        fields.Integer(
+            required=True
+        )
+    ))
+    invasions: int = dataclasses.field(metadata=desert.metadata(
+        fields.Integer(
+            required=True
+        )
+    ))
+    success: bool = dataclasses.field(metadata=desert.metadata(
+        fields.String(
+            required=True
+        )
+    ))
+
+    def dump(self):
+        schema = desert.schema(GetStatisticOutput)
+        return schema.dump(self)
+
+
+@dataclass
 class InvasionSchema:
     id: int = dataclasses.field(metadata=desert.metadata(
         fields.Integer(

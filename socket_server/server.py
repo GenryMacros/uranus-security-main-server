@@ -1,3 +1,4 @@
+import base64
 import logging
 import sys
 from typing import Dict
@@ -96,13 +97,15 @@ async def authenticate(sid, data):
 
 @sio.event
 async def read_frames(sid):
-    sent_cam2frame = overseer.get_last_cam2frame()[0].tolist()
-
+    import imageio
+    imageio.imwrite('outfile.jpg', overseer.get_last_cam2frame()[0])
+    with open("outfile.jpg", "rb") as image_file:
+        encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
     await sio.emit(EventTypeOut.FRAMES.value, data={
-        "frames": {
-            "buffer": sent_cam2frame,
+        "frames": [{
+            "buffer": encoded_string,
             "id": 0
-        }
+        }]
     }, to=sid)
 
 

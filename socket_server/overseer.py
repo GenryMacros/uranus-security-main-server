@@ -5,7 +5,7 @@ import logging
 import os.path
 import sys
 import time
-from threading import Thread
+from threading import Thread, Lock
 from datetime import datetime
 
 import cv2
@@ -79,13 +79,17 @@ class Overseer:
                     is_record = self.recorder.is_record_started[id]
                     self.recorder.end_record(int(id))
                     if is_record != self.recorder.is_record_started[id]:
-                        self.requster.register_invasion(os.path.join(self.recorder.records[id].record_folder,
-                                                                     "cam.mp4"),
-                                                        self.cam_infos[int(id)].back_id, self.auth_data)
+                        if self.auth_data.token is not None:
+                            self.requster.register_invasion(os.path.join(self.recorder.records[id].record_folder,
+                                                                         "cam.mp4"),
+                                                            self.cam_infos[int(id)].back_id, self.auth_data)
                         self.notification_sent = False
                     if not self.recorder.is_record_started[int(id)]:
                         self.last_cam2invasion[id] = False
+            lock = Lock()
+            lock.acquire()
             self.last_cam2frame = cam2frame
+            lock.release()
             self.visualize()
 
     async def send_invasion_event(self, cam_id: int):
@@ -97,7 +101,11 @@ class Overseer:
                                }, to=self.client_sid)
 
     def get_last_cam2frame(self):
-        return copy.copy(self.last_cam2frame)
+        lock = Lock()
+        lock.acquire()
+        ret = copy.copy(self.last_cam2frame)
+        lock.release()
+        return ret
 
     def visualize(self):
         if self.last_cam2frame is None:
