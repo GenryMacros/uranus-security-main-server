@@ -70,7 +70,6 @@ class ClientService:
                                                      confirmation_method=self.confirmation_method)
             return ClientsSignupResponse(True, new_client.id)
         except Exception as e:
-            print(e)
             if new_client is not None:
                 self.clients_repository.delete_client(new_client.id)
             raise SignupFailed()

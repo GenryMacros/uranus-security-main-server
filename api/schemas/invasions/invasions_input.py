@@ -1,5 +1,6 @@
 
 import dataclasses
+from typing import List
 
 import desert
 from marshmallow import fields
@@ -25,6 +26,12 @@ class InvasionAdd:
     ))
     client_id: int = dataclasses.field(metadata=desert.metadata(
         fields.Integer(
+            required=True
+        )
+    ))
+    invaders: List[str] = dataclasses.field(metadata=desert.metadata(
+        fields.List(
+            fields.String,
             required=True
         )
     ))

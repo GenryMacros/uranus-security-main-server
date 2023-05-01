@@ -16,7 +16,8 @@ class ClientRepository(ClientRepositoryInterface):
         self.db_context = db_context
 
     def get_client_by_username(self, username: str) -> Clients:
-        client = self.db_context.query(Clients).filter(Clients.username == username).first()
+        client = self.db_context.query(Clients).filter(Clients.username == username).filter(Clients.is_confirmed).first()
+        #.first()
         if client is None:
             raise InvalidCredentials()
         return client

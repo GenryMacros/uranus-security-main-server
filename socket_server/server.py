@@ -7,7 +7,6 @@ from aiohttp import web
 
 import socketio
 from ai.background_subtractor import BackgroundSubtractor
-from ai.streamer import RealTimeStreamer
 from socket_server.events import EventTypeOut
 from socket_server.requester import Requester
 from socket_server.schemas.cameras import CamInfo
@@ -25,11 +24,10 @@ if IS_LOG:
     logger.propagate = False
 
 
-HOST = "localhost"
+HOST = "0.0.0.0"
 PORT = 8086
 sio = socketio.AsyncServer(async_mode='aiohttp', max_http_buffer_size=3000000)
 cameras = [0]
-streamer = RealTimeStreamer(cameras)
 subtractor = BackgroundSubtractor()
 app = web.Application()
 requester = Requester()

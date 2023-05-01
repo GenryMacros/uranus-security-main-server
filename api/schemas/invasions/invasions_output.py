@@ -78,6 +78,9 @@ class InvasionData(Schema):
         required=True,
         default=None
     )
+    invaders = fields.List(
+        fields.String
+    )
 
 
 class GetInvasionsOutput(Schema):

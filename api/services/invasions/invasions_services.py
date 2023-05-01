@@ -40,39 +40,42 @@ class InvasionsService:
 
     def get_invasions(self, data: InvasionGet) -> GetInvasionsOutput:
         self.check_jwt_token(data.auth_token, data.client_id)
-        invasions = self.invasions_repository.get_invasions_after_date(data.date, data.cam_id)
+        invasions, intruders = self.invasions_repository.get_invasions_after_date(data.date, data.cam_id)
         cam_local_name = self.cameras_repository.get_by_id(data.cam_id).device_name
         response = GetInvasionsOutput()
         response_editable = {"invasions": [], "success": False}
         timestamp = int(time.time())
         download_token = self.__gen_download_token(data.client_id, timestamp).decode('utf-8')
 
-        for inv in invasions:
+        for inv, intrs in zip(invasions, intruders):
             invasion_name = inv.video_path.split("\\")[-2]
             local_video_name = inv.video_path.split("\\")[-1]
             response_editable["invasions"].append(dict(
                 id=inv.id,
                 date=inv.created,
                 file_name=f"{invasion_name}.mp4",
-                link="http://10.0.2.2:8010" + url_for('static', filename=f"invasions/{str(cam_local_name)}/{invasion_name}/{local_video_name}"),
-                link_short=f"http://localhost:8010/clients/cameras/invasions/download?"
+                link="http://192.168.0.107:8010" + url_for('static', filename=f"invasions/{str(cam_local_name)}/{invasion_name}/{local_video_name}"),
+                link_short=f"http://192.168.0.107:8010/clients/cameras/invasions/download?"
                            f"path={inv.video_path}&"
                            f"is_short=1&"
                            f"user_id={data.client_id}&"
                            f"timestamp={timestamp}&"
-                           f"token={download_token}"
+                           f"token={download_token}",
+                invaders=intrs
             ))
         response_editable['success'] = True
         return GetInvasionsOutput.dump(response, response_editable)
 
     def get_statistic(self, data: InvasionGet) -> GetStatisticOutput:
         self.check_jwt_token(data.auth_token, data.client_id)
-        result = GetStatisticOutput(None,None,None,None,None )
-        invasions = list(self.invasions_repository.get_invasions_after_date(data.date, data.cam_id))
+        result = GetStatisticOutput(None, None, None, None, None)
+        invasions, intruders = list(self.invasions_repository.get_invasions_after_date(data.date, data.cam_id))
         invasions.sort(key=lambda x: int(x.created))
         result.latest = int(invasions[-1].created)
         result.duration = 5.1
-        result.intruders = 1.2
+        for intrs in intruders:
+            result.intruders += len(intrs)
+        result.intruders = result.intruders / len(intruders)
         result.invasions = len(invasions)
         result.success = True
         return result

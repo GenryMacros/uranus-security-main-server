@@ -9,7 +9,9 @@ from threading import Thread, Lock
 from datetime import datetime
 
 import cv2
+import numpy as np
 
+from YOLO.YoloDetector import YoloDetector
 from ai.background_subtractor import BackgroundSubtractor
 from ai.streamer import RealTimeStreamer
 from socket_server.events import EventTypeOut
@@ -47,6 +49,8 @@ class Overseer:
         self.cam_infos = cam_infos
         self.dramatic_change_durations = {cam: 0 for cam in self.cameras}
         self.loop_proc = Thread(target=self.loop)
+        self.detected_during_session = set()
+        self.detector = YoloDetector()
 
     def load_from_json(self):
         if not os.path.exists(self.config_path):
@@ -61,14 +65,17 @@ class Overseer:
         asyncio.set_event_loop(loop)
         while True:
             cam2frame = self.streamer.read_frame()
+            self.last_cam2frame = cam2frame
             last_cam2frame = self.subtractor.subtract(cam2frame)
-            self.recorder.record(cam2frame)
             for id, frame in last_cam2frame.items():
                 if self.subtractor.is_dramatically_changed(frame):
                     if self.dramatic_change_durations[id] == 0:
                         self.dramatic_change_durations[id] = time.time()
                     elif time.time() - self.dramatic_change_durations[id] > 1:
                         logger.info("[OVERSEER] POTENTIAL INVASION")
+                        post_det_image, detected = self.detector.predict(self.last_cam2frame[id])
+                        self.last_cam2frame[id] = np.resize(post_det_image, (480, 640, 3))
+                        self.detected_during_session.update(set(detected))
                         self.last_cam2invasion[id] = True
                         self.recorder.start_record(int(id))
                         if not self.notification_sent:
@@ -80,15 +87,16 @@ class Overseer:
                     self.recorder.end_record(int(id))
                     if is_record != self.recorder.is_record_started[id]:
                         if self.auth_data.token is not None:
-                            self.requster.register_invasion(os.path.join(self.recorder.records[id].record_folder,
-                                                                         "cam.mp4"),
-                                                            self.cam_infos[int(id)].back_id, self.auth_data)
+                            self.requster.register_invasion(os.path.join(self.recorder.records[id].record_folder, "cam.mp4"),
+                                                            self.cam_infos[int(id)].back_id, self.auth_data,
+                                                            self.detected_during_session)
+                            self.detected_during_session.clear()
                         self.notification_sent = False
                     if not self.recorder.is_record_started[int(id)]:
                         self.last_cam2invasion[id] = False
+            self.recorder.record(self.last_cam2frame)
             lock = Lock()
             lock.acquire()
-            self.last_cam2frame = cam2frame
             lock.release()
             self.visualize()
 

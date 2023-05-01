@@ -2,7 +2,7 @@ import json
 import logging
 import sys
 from dataclasses import dataclass
-from typing import Set
+from typing import Set, List
 
 import requests
 import urllib.request as urllib2
@@ -77,11 +77,12 @@ class Requester:
                                                              reason="Can't connect to main server.")
         return response_data
 
-    def register_invasion(self, file_path: str, cam_id: int, auth_data: UserAuthData):
+    def register_invasion(self, file_path: str, cam_id: int, auth_data: UserAuthData, detected: Set[str]):
         if self.is_server_available():
             response = requests.post(f"{self.full_api_url}/clients/cameras/invasions/add", json={
                 "client_id": auth_data.userId,
                 "auth_token": auth_data.token,
                 "cam_id": cam_id,
-                "path": file_path
+                "path": file_path,
+                "invaders": list(detected)
             })
