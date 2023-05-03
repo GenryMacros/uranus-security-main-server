@@ -3,6 +3,7 @@ from enum import Enum
 
 class EventTypeOut(Enum):
     ASK_AUTHENTICATE = "ask_authenticate"
+    REAUTH_HAPPENED = "REAUTH_HAPPENED"
     FRAMES = "frames"
     INVASION = "invasion"
 

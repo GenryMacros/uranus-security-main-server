@@ -69,6 +69,11 @@ class InvasionGet:
             required=True
         )
     ))
+    refresh: str = dataclasses.field(metadata=desert.metadata(
+        fields.String(
+            required=True
+        )
+    ))
 
     @classmethod
     def load(cls, json_data):

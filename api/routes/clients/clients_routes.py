@@ -60,7 +60,7 @@ def check_token():
 def refresh_client_jwt():
     request_data: ClientTokenRefresh = ClientTokenRefresh.load(request.get_json())
 
-    refresh_response = client_service.refresh_jwt(request_data)
+    refresh_response: ClientTokenRefresh = client_service.refresh_jwt(request_data)
 
     header = {'Content-Type': 'application/json'}
     return refresh_response.dump(), 200, header

@@ -33,7 +33,6 @@ class Overseer:
 
     def __init__(self, client,
                  cam_infos,
-                 auth_data: UserAuthData,
                  requester: Requester,
                  config_path="configs/overseer_config.json"):
         self.config_path = config_path
@@ -48,7 +47,6 @@ class Overseer:
         self.recorder = Recorder(self.cameras, record_path=config["record_path"])
         self.subtractor = BackgroundSubtractor(dramatic_change_thresh=config["invasion_threshold"])
         self.cam_frame_4 = CamFrame4((1920, 1080), frame_name="CAMERAS")
-        self.auth_data = auth_data
         self.requster = requester
         self.cam_infos = cam_infos
         self.dramatic_change_durations = {cam: 0 for cam in self.cameras}
@@ -90,10 +88,13 @@ class Overseer:
                     is_record = self.recorder.is_record_started[id]
                     self.recorder.end_record(int(id))
                     if is_record != self.recorder.is_record_started[id]:
-                        if self.auth_data.token is not None:
+                        if self.requster.auth_data.token is not None:
+                            cam_back_id = 1
+                            if len(self.cam_infos) > int(id):
+                                cam_back_id = int(id)
                             self.requster.register_invasion(os.path.join(self.recorder.records[id].record_folder, "cam.mp4"),
-                                                            self.cam_infos[int(id)].back_id, self.auth_data,
-                                                            self.detected_during_session)
+                                                            cam_back_id,
+                                                            self.detected_during_session, self.client, self.client_sid)
                             self.detected_during_session.clear()
                         self.notification_sent = False
                     if not self.recorder.is_record_started[int(id)]:

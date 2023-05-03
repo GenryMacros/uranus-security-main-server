@@ -7,6 +7,8 @@ from typing import Set
 import requests
 import urllib.request as urllib2
 import urllib.error as urllib2_err
+
+from socket_server.events import EventTypeOut
 from socket_server.schemas.cameras import Cameras, DefaultResponse
 from socket_server.schemas.user import UserAuthData
 
@@ -86,11 +88,11 @@ class Requester:
             cam_data: Cameras = Cameras([], [], False, '')
         return cam_data
 
-    def register_cameras(self, auth_data: UserAuthData, cams: Set[int]) -> DefaultResponse:
+    def register_cameras(self, cams: Set[int]) -> DefaultResponse:
         if self.is_server_available():
             response = requests.post(f"{self.full_api_url}/clients/cameras/add", json={
-                "id": auth_data.userId,
-                "auth_token": auth_data.token,
+                "id": self.auth_data.userId,
+                "auth_token": self.auth_data.token,
                 "cameras": [{"cam_id": str(cam)} for cam in cams]
             })
             response_data: DefaultResponse = DefaultResponse.load(response.json())
@@ -99,16 +101,42 @@ class Requester:
                                                              reason="Can't connect to main server.")
         return response_data
 
-    def register_invasion(self, file_path: str, cam_id: int, auth_data: UserAuthData, detected: Set[str]):
+    def register_invasion(self, file_path: str, cam_id: int, detected: Set[str],
+                          client, client_sid):
         if self.is_server_available():
-            response = requests.post(f"{self.full_api_url}/clients/cameras/invasions/add", json={
-                "client_id": auth_data.userId,
-                "auth_token": auth_data.token,
-                "cam_id": cam_id,
-                "path": file_path,
-                "invaders": list(detected)
+            while True:
+                response = requests.post(f"{self.full_api_url}/clients/cameras/invasions/add", json={
+                    "client_id": self.auth_data.userId,
+                    "auth_token": self.auth_data.token,
+                    "cam_id": cam_id,
+                    "path": file_path,
+                    "invaders": list(detected)
+                })
+                if response.status_code >= 400:
+                    if response.json()["reason"] == "Token is expired":
+                        is_reauth_successful = self.reauth()
+                        if is_reauth_successful:
+                            client.emit(EventTypeOut.REAUTH_HAPPENED.value,
+                                        data={
+                                            "new_token": self.auth_data.token
+                                        }, to=client_sid)
+                    else:
+                        logger.info("[REQUESTER] Failed to post new invasion on server")
+                break
+        else:
+            logger.info("[REQUESTER] Server api is unavailable")
+
+    def reauth(self) -> bool:
+        is_successful = True
+        if self.is_server_available():
+            response = requests.post(f"{self.full_api_url}/clients/refresh", json={
+                "user_id": self.auth_data.userId,
+                "jwt": self.auth_data.token,
+                "refresh": self.auth_data.refreshToken
             })
             if response.status_code >= 400:
+                is_successful = False
                 logger.info("[REQUESTER] Failed to post new invasion on server")
         else:
             logger.info("[REQUESTER] Server api is unavailable")
+        return is_successful

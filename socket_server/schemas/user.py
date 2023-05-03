@@ -6,6 +6,24 @@ from marshmallow_dataclass import dataclass
 
 
 @dataclass
+class TokenRefresh:
+    token: str = dataclasses.field(metadata=desert.metadata(
+        fields.String(
+            required=True,
+            default=None
+        )
+    ))
+
+    @classmethod
+    def load(cls, json_data):
+        schema = desert.schema(TokenRefresh)
+        loaded_data: TokenRefresh = schema.load(json_data)
+        if loaded_data.token is None:
+            raise ValueError("Received unacceptable auth schemas")
+        return loaded_data
+
+
+@dataclass
 class UserAuthData:
     publicKey: str = dataclasses.field(metadata=desert.metadata(
         fields.String(

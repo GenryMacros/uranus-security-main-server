@@ -1,6 +1,6 @@
 from typing import Tuple
 
-from api.exceptions.clients.exceptions import InvalidCredentials, ClientNotFound, TokenIsInvalid
+from api.exceptions.clients.exceptions import InvalidCredentials, ClientNotFound, TokenIsInvalid, ClientExists
 
 from api.models.clients.clients_models import ClientsSecrets, Clients, ClientsAdditionalContacts, ClientsLocations, \
     ClientsConfirmations
@@ -85,7 +85,6 @@ class ClientRepository(ClientRepositoryInterface):
         self.db_context.commit()
 
     def add_new_client(self, username: str, email: str, signup_date: str) -> Clients:
-
         new_client = Clients(
             username=username,
             email=email,
@@ -93,6 +92,10 @@ class ClientRepository(ClientRepositoryInterface):
             is_confirmed=False,
             signup_date=signup_date
         )
+
+        clients = self.db_context.query(Clients).filter(Clients.username == username).first()
+        if clients:
+            raise ClientExists()
         self.db_context.add(new_client)
         self.db_context.commit()
         self.db_context.refresh(new_client)
