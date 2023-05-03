@@ -1,5 +1,5 @@
 {
   "cam_ids": "[0]",
   "invasion_threshold": 0.03,
-  "record_path": "C:\\diploma\\uranus-security-main-server\\api\\static\\invasions"
+  "record_path": "/home/light-frosted/PRojects/Uranus/uranus-security-main-server/api/static/invasions"
 }

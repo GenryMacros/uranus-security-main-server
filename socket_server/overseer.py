@@ -31,7 +31,11 @@ if IS_LOG:
 
 class Overseer:
 
-    def __init__(self, client, cam_infos, auth_data: UserAuthData, config_path="configs/overseer_config.json"):
+    def __init__(self, client,
+                 cam_infos,
+                 auth_data: UserAuthData,
+                 requester: Requester,
+                 config_path="configs/overseer_config.json"):
         self.config_path = config_path
         config = self.load_from_json()
         self.last_cam2frame = None
@@ -45,7 +49,7 @@ class Overseer:
         self.subtractor = BackgroundSubtractor(dramatic_change_thresh=config["invasion_threshold"])
         self.cam_frame_4 = CamFrame4((1920, 1080), frame_name="CAMERAS")
         self.auth_data = auth_data
-        self.requster = Requester()
+        self.requster = requester
         self.cam_infos = cam_infos
         self.dramatic_change_durations = {cam: 0 for cam in self.cameras}
         self.loop_proc = Thread(target=self.loop)

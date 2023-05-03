@@ -1,4 +1,6 @@
 {
   "host": "0.0.0.0",
-  "port": 8010
+  "port": 8010,
+  "default_client_login": "imhuman1",
+  "default_client_password": "imhuman1imhuman1"
 }

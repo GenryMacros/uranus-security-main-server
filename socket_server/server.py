@@ -28,13 +28,12 @@ HOST = "0.0.0.0"
 PORT = 8086
 sio = socketio.AsyncServer(async_mode='aiohttp', max_http_buffer_size=3000000)
 cameras = [0]
-subtractor = BackgroundSubtractor()
 app = web.Application()
-requester = Requester()
+auth_data: UserAuthData = UserAuthData(None, None, None, None)
+requester = Requester(auth_data)
 sio.attach(app)
 last_cam2frame = None
 recorder = Recorder(cameras)
-auth_data: UserAuthData = UserAuthData(None, None, None, None)
 cam_infos: Dict[int, CamInfo] = {}
 
 
@@ -114,6 +113,6 @@ def disconnect(sid):
 
 if __name__ == '__main__':
     config_path = "configs/overseer_config.json"
-    overseer = Overseer(sio, cam_infos, auth_data, config_path)
+    overseer = Overseer(sio, cam_infos, auth_data, requester, config_path)
     overseer.loop_proc.start()
     web.run_app(app, host=HOST, port=PORT)
