@@ -48,8 +48,8 @@ class InvasionsService:
         download_token = self.__gen_download_token(data.client_id, timestamp).decode('utf-8')
 
         for inv, intrs in zip(invasions, intruders):
-            invasion_name = inv.video_path.split("\\")[-2]
-            local_video_name = inv.video_path.split("\\")[-1]
+            invasion_name = inv.video_path.split("/")[-2]
+            local_video_name = inv.video_path.split("/")[-1]
             response_editable["invasions"].append(dict(
                 id=inv.id,
                 date=inv.created,
