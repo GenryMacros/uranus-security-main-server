@@ -103,7 +103,8 @@ async def refresh_auth_data(sid, data):
 @sio.event
 async def read_frames(sid):
     import imageio
-    imageio.imwrite('outfile.jpg', overseer.get_last_cam2frame()[0])
+    import cv2
+    imageio.imwrite('outfile.jpg', cv2.cvtColor(overseer.get_last_cam2frame()[0], cv2.COLOR_RGB2BGR))
     with open("outfile.jpg", "rb") as image_file:
         encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
     await sio.emit(EventTypeOut.FRAMES.value, data={
