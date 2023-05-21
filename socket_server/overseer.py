@@ -80,13 +80,11 @@ class Overseer:
                         self.detected_during_session.update(set(detected))
                         self.last_cam2invasion[id] = True
                         self.recorder.start_record(int(id))
-                        if not self.notification_sent:
-                            loop.run_until_complete(self.send_invasion_event(int(id)))
-                            self.notification_sent = True
-                else:
+                elif self.recorder.is_session_long_enough(id):
                     self.dramatic_change_durations[id] = 0
                     is_record = self.recorder.is_record_started[id]
                     self.recorder.end_record(int(id))
+                    loop.run_until_complete(self.send_invasion_event(int(id)))
                     if is_record != self.recorder.is_record_started[id]:
                         if self.requster.auth_data.token is not None:
                             cam_back_id = 1
